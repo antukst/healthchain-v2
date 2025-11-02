@@ -1,0 +1,16 @@
+{
+  "name": "HealthChain Pro",
+  "short_name": "HealthChain",
+  "description": "Offline-first decentralized healthcare system with PouchDB, IPFS, and Polygon",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
