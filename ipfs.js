@@ -8,6 +8,7 @@ class IPFSManager {
   // Initialize Pinata connection
   async init() {
     try {
+      console.log('🔄 Initializing Pinata IPFS connection...');
       const response = await fetch('https://api.pinata.cloud/data/testAuthentication', {
         method: 'GET',
         headers: {
@@ -17,10 +18,10 @@ class IPFSManager {
 
       if (response.ok) {
         this.isConnected = true;
-        console.log('✅ Connected to Pinata IPFS');
+        console.log('✅ Connected to Pinata IPFS - Ready for distributed file pinning');
         return true;
       } else {
-        console.warn('⚠️ Pinata authentication failed');
+        console.warn('⚠️ Pinata authentication failed:', response.status, response.statusText);
         this.isConnected = false;
         return false;
       }
@@ -143,6 +144,33 @@ class IPFSManager {
   // Get pending sync count (not applicable for Pinata, return 0)
   async getPendingSyncCount() {
     return 0;
+  }
+
+  // Manual status check for debugging
+  async checkStatus() {
+    try {
+      console.log('🔍 Checking IPFS status...');
+      console.log('Connected:', this.isConnected);
+      console.log('JWT configured:', !!this.jwt);
+
+      if (this.isConnected) {
+        console.log('✅ IPFS is connected and ready for distributed file pinning');
+        return { connected: true, service: 'Pinata Cloud', status: 'operational' };
+      } else {
+        console.log('⚠️ IPFS is not connected. Attempting to reconnect...');
+        const reconnected = await this.init();
+        if (reconnected) {
+          console.log('✅ Reconnected successfully');
+          return { connected: true, service: 'Pinata Cloud', status: 'reconnected' };
+        } else {
+          console.log('❌ Failed to reconnect');
+          return { connected: false, service: 'Pinata Cloud', status: 'disconnected' };
+        }
+      }
+    } catch (error) {
+      console.error('❌ Status check failed:', error);
+      return { connected: false, service: 'Pinata Cloud', status: 'error', error: error.message };
+    }
   }
 }
 

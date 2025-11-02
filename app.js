@@ -2058,10 +2058,9 @@ async function updateSystemStatus() {
   const ipfsStatus = document.getElementById('ipfsStatus');
   const ipfsConnected = !!(ipfsManager && ipfsManager.isConnected);
   if (ipfsConnected) {
-    setStatusChip(ipfsStatus, 'ok', 'Full node');
+    setStatusChip(ipfsStatus, 'ok', 'Pinata Cloud');
   } else {
-    // Show as working even in gateway mode (files will use public IPFS gateway)
-  setStatusChip(ipfsStatus, 'warn', '');
+    setStatusChip(ipfsStatus, 'warn', 'Disconnected');
   }
 
   // Update blockchain status
@@ -2623,6 +2622,23 @@ window.forceCreateAdmin = function() {
   } catch (error) {
     console.error('❌ Failed to create admin user:', error);
     return null;
+  }
+};
+
+// Debug IPFS status (call from browser console)
+window.debugIPFS = async function() {
+  console.log('🔍 Checking IPFS status...');
+  if (typeof ipfsManager !== 'undefined' && ipfsManager) {
+    const status = await ipfsManager.checkStatus();
+    console.log('IPFS Status:', status);
+
+    // Also update the UI status
+    await updateSystemStatus();
+    console.log('✅ UI status updated');
+    return status;
+  } else {
+    console.error('❌ ipfsManager not found');
+    return { error: 'ipfsManager not available' };
   }
 };
 
