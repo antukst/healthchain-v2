@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "rootDirectory": "healthchain-pro",
+  "buildCommand": "echo 'Static site'",
+  "installCommand": "echo 'No install needed'",
+  "framework": null,
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
