@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "outputDirectory": ".",
   "installCommand": "echo 'Skip install'",
   "buildCommand": "echo 'Static site - no build needed'",
   "framework": null,
