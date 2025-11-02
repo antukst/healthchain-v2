@@ -6,7 +6,7 @@
   "framework": null,
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/((?!.*\\.(js|css|json|png|jpg|jpeg|gif|ico|svg|woff|woff2|txt|pdf|doc|docx|xls|xlsx)).*)",
       "dest": "/index.html"
     }
   ]
