@@ -2642,6 +2642,34 @@ window.debugIPFS = async function() {
   }
 };
 
+// Force reconnect IPFS (call from browser console)
+window.forceReconnectIPFS = async function() {
+  console.log('🔄 Force reconnecting IPFS...');
+  if (typeof ipfsManager !== 'undefined' && ipfsManager) {
+    const result = await ipfsManager.forceReconnect();
+    console.log('Force reconnect result:', result);
+    await updateSystemStatus();
+    return result;
+  } else {
+    console.error('❌ ipfsManager not found');
+    return { error: 'ipfsManager not available' };
+  }
+};
+
+// Test IPFS pinning (call from browser console)
+window.testIPFSPinning = async function() {
+  console.log('🧪 Testing IPFS pinning...');
+  if (typeof ipfsManager !== 'undefined' && ipfsManager) {
+    const result = await ipfsManager.testPinning();
+    console.log('Test pinning result:', result);
+    await updateSystemStatus();
+    return result;
+  } else {
+    console.error('❌ ipfsManager not found');
+    return { error: 'ipfsManager not available' };
+  }
+};
+
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   initApp();

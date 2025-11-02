@@ -146,30 +146,24 @@ class IPFSManager {
     return 0;
   }
 
-  // Manual status check for debugging
-  async checkStatus() {
-    try {
-      console.log('🔍 Checking IPFS status...');
-      console.log('Connected:', this.isConnected);
-      console.log('JWT configured:', !!this.jwt);
+  // Force reconnect (useful for debugging)
+  async forceReconnect() {
+    console.log('🔄 Force reconnecting to Pinata...');
+    this.isConnected = false;
+    return await this.init();
+  }
 
-      if (this.isConnected) {
-        console.log('✅ IPFS is connected and ready for distributed file pinning');
-        return { connected: true, service: 'Pinata Cloud', status: 'operational' };
-      } else {
-        console.log('⚠️ IPFS is not connected. Attempting to reconnect...');
-        const reconnected = await this.init();
-        if (reconnected) {
-          console.log('✅ Reconnected successfully');
-          return { connected: true, service: 'Pinata Cloud', status: 'reconnected' };
-        } else {
-          console.log('❌ Failed to reconnect');
-          return { connected: false, service: 'Pinata Cloud', status: 'disconnected' };
-        }
-      }
+  // Test file pinning (for debugging)
+  async testPinning() {
+    try {
+      console.log('🧪 Testing file pinning...');
+      const testData = { test: 'HealthChain IPFS test', timestamp: new Date().toISOString() };
+      const cid = await this.addData(testData, { path: '/healthchain/test.json' });
+      console.log('✅ Test pinning successful, CID:', cid);
+      return { success: true, cid: cid };
     } catch (error) {
-      console.error('❌ Status check failed:', error);
-      return { connected: false, service: 'Pinata Cloud', status: 'error', error: error.message };
+      console.error('❌ Test pinning failed:', error);
+      return { success: false, error: error.message };
     }
   }
 }
