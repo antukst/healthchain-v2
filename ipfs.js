@@ -141,9 +141,40 @@ class IPFSManager {
     }
   }
 
-  // Get pending sync count (not applicable for Pinata, return 0)
-  async getPendingSyncCount() {
-    return 0;
+  // Manual status check for debugging
+  async checkStatus() {
+    try {
+      console.log('🔍 Checking IPFS status...');
+      console.log('Connected:', this.isConnected);
+      console.log('JWT configured:', !!this.jwt);
+
+      // Test the actual API connection
+      console.log('🌐 Testing Pinata API connection...');
+      const testResponse = await fetch('https://api.pinata.cloud/data/testAuthentication', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.jwt}`
+        }
+      });
+
+      console.log('API Response Status:', testResponse.status);
+      console.log('API Response OK:', testResponse.ok);
+
+      if (testResponse.ok) {
+        this.isConnected = true;
+        console.log('✅ IPFS is connected and ready for distributed file pinning');
+        return { connected: true, service: 'Pinata Cloud', status: 'operational', apiStatus: testResponse.status };
+      } else {
+        this.isConnected = false;
+        const errorText = await testResponse.text();
+        console.log('❌ API authentication failed:', testResponse.status, errorText);
+        return { connected: false, service: 'Pinata Cloud', status: 'auth_failed', apiStatus: testResponse.status, error: errorText };
+      }
+    } catch (error) {
+      console.error('❌ Status check failed:', error);
+      this.isConnected = false;
+      return { connected: false, service: 'Pinata Cloud', status: 'error', error: error.message };
+    }
   }
 
   // Force reconnect (useful for debugging)
