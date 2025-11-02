@@ -1,4 +1,5 @@
 // app.js - HealthChain Pro Application Logic
+console.log('🚀 app.js loaded successfully');
 
 // Global variables
 let currentUser = null;
