@@ -3,11 +3,5 @@
   "outputDirectory": ".",
   "installCommand": "echo 'Skip install'",
   "buildCommand": "echo 'Static site - no build needed'",
-  "framework": null,
-  "routes": [
-    {
-      "src": "/((?!.*\\.(js|css|json|png|jpg|jpeg|gif|ico|svg|woff|woff2|txt|pdf|doc|docx|xls|xlsx)).*)",
-      "dest": "/index.html"
-    }
-  ]
+  "framework": null
 }
