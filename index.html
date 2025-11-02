@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthChain Pro</title>
+<link rel="manifest" href="manifest.json">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class', // Enable class-based dark mode
+  }
+</script>
+<script>
+  // Theme initialization - must run before page renders
+  if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+</script>
+<!-- Flowbite UI -->
+<link href="https://unpkg.com/flowbite@1.7.5/dist/flowbite.min.css" rel="stylesheet" />
+<script src="https://unpkg.com/flowbite@1.7.5/dist/flowbite.js"></script>
+<!-- PouchDB -->
+<script src="https://cdn.jsdelivr.net/npm/pouchdb@7.3.0/dist/pouchdb.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- SheetJS for table imports -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- QR Code -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcodeFcolor.min.js"></script>
+<!-- IPFS HTTP Client -->
+<script src="https://unpkg.com/ipfs-http-client@59.0.0/dist/index.min.js"></script>
+<!-- Web3.js -->
+<script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-500">
+
+<!-- Header -->
+<header class="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-800 dark:to-purple-900 p-6 text-white shadow-md flex flex-col sm:flex-row justify-between items-center">
+  <div class="text-center sm:text-left">
+    <h1 class="text-4xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-500 to-purple-500 animate-gradient">HealthChain Pro</h1>
+    <p class="mt-2 text-[0.7rem] uppercase tracking-[0.35em] text-white/70">Decentralized Healthcare System</p>
+    <p class="mt-1 text-xs uppercase tracking-[0.25em] text-white/80">Dev by Antu</p>
+  </div>
+  <div class="flex items-center space-x-4 mt-2 sm:mt-0">
+    <!-- User Authentication Display -->
+    <div class="flex items-center space-x-2">
+  <button id="profileBtn" class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-sm font-medium hover:bg-white/25 transition" title="View profile" aria-expanded="false" aria-controls="profilePanel">
+        <span id="userDisplay" class="text-sm">Not signed in</span>
+        <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      <button id="authBtn" class="px-3 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-sm font-semibold hover:bg-white/25 transition">Sign In</button>
+      <button id="logoutBtn" class="hidden p-2 rounded-full bg-white/12 backdrop-blur text-white hover:bg-white/25 transition" title="Sign out">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+        </svg>
+      </button>
+    </div>
+    <div id="systemStatus" class="flex space-x-2 text-xs">
+      <span id="ipfsStatus" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600">IPFS: ⏳</span>
+      <span id="blockchainStatus" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600">Polygon: ⏳</span>
+    </div>
+    <button id="toggleTheme" class="p-2 rounded-full bg-white/20 hover:bg-white/30 dark:bg-white/10 dark:hover:bg-white/20 text-white transition flex items-center justify-center" aria-label="Toggle color theme">
+      <svg id="sunIcon" class="w-5 h-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v-2m0 19v-2m7.5-7.5h2m-19 0h2m12.02 5.02 1.42 1.42m-14.08-14.1 1.42 1.42m0 11.26-1.42 1.42m14.1-14.08-1.42 1.42M12 7.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z" />
+      </svg>
+      <svg id="moonIcon" class="w-5 h-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M17.293 13.293a8 8 0 0 1-10.586-10.586A8 8 0 1 0 17.293 13.293Z" />
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- Add Patient Section -->
+<section id="addPatientSection" data-requires-auth="true" data-requires-write="true" class="p-6 max-w-5xl mx-auto mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg animate-fadeIn hidden">
+<h2 class="text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">Add New Patient</h2>
+<form id="patientForm" class="grid gap-4 sm:grid-cols-2">
+  <input type="text" name="name" placeholder="Patient Name" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" required>
+  <input type="number" name="age" placeholder="Age" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" required>
+  <input type="text" name="gender" placeholder="Gender" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400">
+  <input type="text" name="diagnosis" placeholder="Diagnosis" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" required>
+  <input type="text" name="prescription" placeholder="Prescription ID" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400">
+  <input type="text" name="room" placeholder="Room Number" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400">
+  <textarea name="medical_history" placeholder="Medical History" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 col-span-2" rows="3"></textarea>
+  <input type="text" name="allergies" placeholder="Allergies" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400">
+  <input type="text" name="emergency_contact" placeholder="Emergency Contact" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400">
+  <input type="file" name="photo" class="p-2 border rounded-lg col-span-2 focus:outline-none focus:ring-2 focus:ring-purple-400" accept="image/*">
+  <button type="submit" class="col-span-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-blue-500 hover:to-purple-500 text-white font-bold px-4 py-3 rounded-lg shadow-lg transition transform hover:scale-105">Add Patient Securely</button>
+</form>
+</section>
+
+<!-- Stats Section -->
+<section id="statsSection" data-requires-auth="true" class="p-6 max-w-5xl mx-auto mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg animate-fadeIn hidden">
+<h2 class="text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">Stats & Analytics</h2>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  <div class="p-4 bg-gradient-to-br from-blue-200 to-blue-400 dark:from-blue-900 dark:to-blue-700 rounded-lg shadow hover:scale-105 transition transform">
+    <p class="text-sm">Total Patients</p>
+    <p id="totalPatients" class="text-3xl font-bold">0</p>
+  </div>
+  <div class="p-4 bg-gradient-to-br from-green-200 to-green-400 dark:from-green-900 dark:to-green-700 rounded-lg shadow hover:scale-105 transition transform">
+    <p class="text-sm">Average Age</p>
+    <p id="avgAge" class="text-3xl font-bold">0</p>
+  </div>
+  <div class="p-4 bg-gradient-to-br from-red-200 to-red-400 dark:from-red-900 dark:to-red-700 rounded-lg shadow hover:scale-105 transition transform">
+    <p class="text-sm">Critical Cases</p>
+    <p id="criticalCases" class="text-3xl font-bold">0</p>
+  </div>
+</div>
+<div class="mt-6 grid grid-cols-1 xl:grid-cols-3 gap-4">
+  <div class="xl:col-span-1 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
+    <h3 class="text-lg font-semibold text-purple-600 dark:text-purple-300 mb-3">Disease Distribution</h3>
+    <div class="h-64">
+      <canvas id="diseaseChart" class="rounded-lg"></canvas>
+    </div>
+  </div>
+  <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
+    <h3 class="text-lg font-semibold text-purple-600 dark:text-purple-300 mb-3">Record Type Breakdown</h3>
+    <div class="h-64">
+      <canvas id="testTypeChart" class="rounded-lg"></canvas>
+    </div>
+  </div>
+  <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
+    <h3 class="text-lg font-semibold text-purple-600 dark:text-purple-300 mb-3">Monthly Upload Trend</h3>
+    <div class="h-64">
+      <canvas id="monthlyTrendChart" class="rounded-lg"></canvas>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- Patient List & Search -->
+<section id="searchSection" data-requires-auth="true" class="p-6 max-w-5xl mx-auto mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg animate-fadeIn hidden">
+<h2 class="text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">Patients</h2>
+<div class="flex justify-between items-center mb-4">
+  <input type="text" id="searchInput" placeholder="Search by name, diagnosis, ID..." class="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 mr-4">
+  <div class="flex space-x-2">
+    <button id="deleteSelectedBtn" data-requires-delete="true" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 disabled:opacity-50" disabled>Delete Selected</button>
+    <button id="exportBtn" data-requires-write="true" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:opacity-50">Export Data</button>
+    <button id="importBtn" data-requires-write="true" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 disabled:opacity-50">Import Data</button>
+    <button id="importTextBtn" data-requires-write="true" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 disabled:opacity-50">Import from Text</button>
+  </div>
+</div>
+
+<table class="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+<thead class="bg-gray-200 dark:bg-gray-700">
+<tr>
+  <th class="border px-4 py-2"><input type="checkbox" id="selectAllCheckbox" class="cursor-pointer" title="Select All"></th>
+  <th class="border px-4 py-2">ID</th>
+  <th class="border px-4 py-2">Name</th>
+  <th class="border px-4 py-2">Age</th>
+  <th class="border px-4 py-2">Gender</th>
+  <th class="border px-4 py-2">Diagnosis</th>
+  <th class="border px-4 py-2">Prescription</th>
+  <th class="border px-4 py-2">Date Added</th>
+  <th class="border px-4 py-2">Actions</th>
+</tr>
+</thead>
+<tbody id="patientList">
+<!-- Dynamic patient rows here -->
+</tbody>
+</table>
+</section>
+
+<!-- Medical Records Section -->
+<section id="medicalRecordsSection" data-requires-auth="true" data-requires-write="true" data-patient-access="self" class="p-6 max-w-5xl mx-auto mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg animate-fadeIn hidden">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-purple-600 dark:text-purple-300">Medical Records Upload</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-300 max-w-2xl">Securely attach lab reports, diagnostics and prescriptions. Files are encrypted locally, pinned to IPFS and notarized on Polygon for tamper-proof history.</p>
+    </div>
+    <div class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-white">
+      <span class="px-3 py-1 rounded-full bg-blue-500/40 dark:bg-blue-400/30 backdrop-blur">End-to-end encrypted</span>
+      <span class="px-3 py-1 rounded-full bg-purple-500/40 dark:bg-purple-400/30 backdrop-blur">IPFS • Polygon</span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Upload Area -->
+    <div class="space-y-6">
+      <div class="bg-gradient-to-br from-purple-500/25 via-indigo-500/10 to-purple-500/10 p-[1px] rounded-2xl shadow-md">
+        <div class="rounded-2xl bg-white dark:bg-gray-900/70 border border-white/60 dark:border-gray-700/60 p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Drop files or browse</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">PDF, DOCX, PNG, JPG, TXT • up to 10MB each</p>
+            </div>
+            <button id="selectFilesBtn" data-requires-write="true" class="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm shadow">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.5 12h15M12 4.5v15"/></svg>
+              Browse files
+            </button>
+          </div>
+
+          <div id="fileUploadArea" class="rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/60 p-8 text-center cursor-pointer hover:border-purple-400 dark:hover:border-purple-400 transition-all">
+            <div class="text-gray-500 dark:text-gray-400">
+              <svg class="mx-auto h-14 w-14 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 0 1-.88-7.903A5 5 0 1 1 15.9 6H16a5 5 0 0 1 1 9.9M15 13l-3-3m0 0-3 3m3-3v12" />
+              </svg>
+              <p class="text-base font-semibold">Drag &amp; drop documents</p>
+              <p class="text-xs">or tap to select from your device</p>
+            </div>
+          </div>
+
+          <input type="file" id="medicalFilesInput" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.txt,image/*" class="hidden">
+
+          <div class="mt-5">
+            <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Selected files</h4>
+            <div id="selectedFiles" class="space-y-3"></div>
+          </div>
+
+          <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <div class="relative">
+                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400 dark:text-gray-500">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"/></svg>
+                </span>
+                <input type="text" id="recordPatientSearch" autocomplete="off" placeholder="Search patients by name, ID, or diagnosis" class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white/90 dark:bg-gray-800 px-9 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder:text-gray-400 dark:placeholder:text-gray-500" aria-label="Search patients" data-requires-write="true">
+              </div>
+              <select id="recordPatientSelect" data-requires-write="true" class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                <option value="">Select Patient</option>
+              </select>
+            </div>
+            <select id="recordType" data-requires-write="true" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+              <option value="other">Other</option>
+              <option value="blood_test">Blood Test</option>
+              <option value="mri">MRI Report</option>
+              <option value="xray">X-Ray</option>
+              <option value="ct_scan">CT Scan</option>
+              <option value="lab_report">Lab Report</option>
+              <option value="prescription">Prescription</option>
+              <option value="ultrasound">Ultrasound</option>
+              <option value="ecg">ECG Report</option>
+            </select>
+          </div>
+
+          <p id="recordPatientHint" class="mt-2 text-xs text-gray-500 dark:text-gray-400">Select a patient profile to enable uploads.</p>
+
+          <div class="mt-4 space-y-3">
+            <input type="text" id="selectedFileName" data-requires-write="true" placeholder="Friendly file name or summary" class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+            <textarea id="recordDescription" data-requires-write="true" rows="2" placeholder="Optional notes for care team" class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"></textarea>
+          </div>
+
+          <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <span class="status-dot status-dot--ok"></span>
+              Files encrypted before upload
+            </div>
+            <div class="flex gap-3">
+              <button id="refreshPatientsBtn" data-requires-write="true" class="inline-flex items-center justify-center gap-2 rounded-full border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.5 4.5v6h6m9-1a9 9 0 1 0-3 6.708"/></svg>
+                Refresh patients
+              </button>
+              <button id="uploadRecordsBtn" data-requires-write="true" class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shadow disabled:opacity-50" disabled>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v15m0 0 5.25-5.25M12 19.5 6.75 14.25"/></svg>
+                Upload records
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats and Health Indicators -->
+    <div class="space-y-6">
+      <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/70 p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">System Health</h3>
+          <span class="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">Realtime</span>
+        </div>
+        <div class="space-y-3">
+          <div class="status-row">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <span class="status-dot status-dot--ok"></span>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">Local Database</p>
+                  <p id="localDbStatus" class="status-label">Checking…</p>
+                </div>
+              </div>
+              <span class="status-chip status-chip--ok">Core</span>
+            </div>
+          </div>
+          <div class="status-row">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <span id="ipfsHealth" class="status-dot" aria-label="IPFS status"></span>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">IPFS Storage</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Distributed file pinning</p>
+                </div>
+              </div>
+              <span id="ipfsStatus" class="status-chip">Checking…</span>
+            </div>
+          </div>
+          <div class="status-row">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <span id="blockchainHealth" class="status-dot" aria-label="Blockchain status"></span>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">Polygon Blockchain</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Integrity proofs</p>
+                </div>
+              </div>
+              <span id="blockchainStatus" class="status-chip">Checking…</span>
+            </div>
+          </div>
+          <div class="status-row">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <span id="encryptionHealth" class="status-dot" aria-label="Encryption status"></span>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">Client Encryption</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">AES-GCM secure vault</p>
+                </div>
+              </div>
+              <span class="status-chip status-chip--ok">Private</span>
+            </div>
+          </div>
+          <div id="syncStatus" class="hidden text-xs text-amber-500 font-semibold uppercase tracking-widest"></div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-5 shadow-sm space-y-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="stat-card">
+            <p class="stat-label">Total Records</p>
+            <p id="totalRecords" class="stat-value">0</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Last Updated</p>
+            <p id="lastUpdated" class="stat-value text-base">--:--</p>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Gender Distribution</h4>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <span>Male</span>
+                <span id="maleCount">0</span>
+              </div>
+              <div class="progress-track">
+                <div id="malePercentage" class="progress-bar progress-bar--blue" style="width: 0%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <span>Female</span>
+                <span id="femaleCount">0</span>
+              </div>
+              <div class="progress-track">
+                <div id="femalePercentage" class="progress-bar progress-bar--pink" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Profile Mega Panel -->
+<div id="profilePanel" class="hidden fixed inset-0 z-50">
+  <div id="profileOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+  <div class="absolute right-0 top-0 h-full w-full sm:w-[26rem] bg-white dark:bg-gray-900 shadow-xl border-l border-white/20 dark:border-gray-700/60 transform transition-transform duration-300 translate-x-full" id="profileDrawer">
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-200/60 dark:border-gray-700/50">
+      <div>
+        <p class="text-xs uppercase tracking-[0.35em] text-purple-500 dark:text-purple-300">Profile</p>
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="profileName">Guest</h3>
+      </div>
+      <button id="closeProfilePanel" class="p-2 rounded-full bg-gray-100/60 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700" aria-label="Close profile">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18 18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
+    <div class="px-6 py-5 space-y-6 overflow-y-auto h-[calc(100%-5.5rem)]">
+      <div class="flex items-center gap-4">
+        <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white text-xl font-semibold" id="profileAvatar">--</div>
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Signed in as</p>
+          <p class="text-base font-semibold text-gray-900 dark:text-gray-100" id="profileUsername">guest</p>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-gray-200/70 dark:border-gray-700/60 bg-gray-50/80 dark:bg-gray-800/70 p-5">
+        <p class="text-xs font-semibold uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400 mb-3">Current role</p>
+        <div class="flex items-center gap-3">
+          <span class="inline-flex items-center px-3 py-1 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-200 text-xs font-semibold uppercase" id="profileRole">guest</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400" id="profileAccess">Read only</span>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-gray-200/70 dark:border-gray-700/60 bg-white dark:bg-gray-900/70 p-5">
+        <p class="text-xs font-semibold uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400 mb-3">Permissions</p>
+        <ul id="profilePermissions" class="space-y-2 text-sm text-gray-700 dark:text-gray-200">
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> None</li>
+        </ul>
+      </div>
+
+      <div class="rounded-2xl border border-gray-200/70 dark:border-gray-700/60 bg-gray-50/80 dark:bg-gray-800/80 p-5 space-y-4">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400">Session</p>
+          <p class="text-sm text-gray-700 dark:text-gray-300" id="profileSession">Not signed in</p>
+        </div>
+        <button id="profileSignOut" class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-red-500/15 text-red-600 dark:text-red-300 px-4 py-2 text-sm font-semibold hover:bg-red-500/25 transition" type="button">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m15 12 3-3m0 0-3-3m3 3H9m6 6v3.75A2.25 2.25 0 0 1 12.75 21h-6A2.25 2.25 0 0 1 4.5 18.75V5.25A2.25 2.25 0 0 1 6.75 3h6A2.25 2.25 0 0 1 15 5.25V9" /></svg>
+          Sign out
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="db.js"></script>
+<script src="encryption.js"></script>
+<script src="ipfs.js"></script>
+<script src="blockchain.js"></script>
+<script src="app.js"></script>
+<script src="charts.js"></script>
+<script src="test.js"></script>
+
+<script>
+// Theme Toggle - Enhanced with debugging
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🚀 HealthChain Pro loaded successfully!');
+  
+  const toggleThemeBtn = document.getElementById('toggleTheme');
+  const sunIcon = document.getElementById('sunIcon');
+  const moonIcon = document.getElementById('moonIcon');
+
+  function setThemeUI(isDark) {
+    if (sunIcon) sunIcon.classList.toggle('hidden', !isDark);
+    if (moonIcon) moonIcon.classList.toggle('hidden', isDark);
+  }
+  
+  setThemeUI(document.documentElement.classList.contains('dark'));
+  
+  if (toggleThemeBtn) {
+    console.log('✅ Theme toggle button found!');
+    toggleThemeBtn.addEventListener('click', function() {
+      const htmlElement = document.documentElement;
+      const isDark = htmlElement.classList.contains('dark');
+      
+      if (isDark) {
+        htmlElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        console.log('✅ Switched to LIGHT mode');
+        setThemeUI(false);
+      } else {
+        htmlElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        console.log('✅ Switched to DARK mode');
+        setThemeUI(true);
+      }
+    });
+  } else {
+    console.error('❌ Theme toggle button not found!');
+  }
+
+  // Register service worker for PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('✅ Service Worker registered:', registration);
+      })
+      .catch(error => {
+        console.log('❌ Service Worker registration failed:', error);
+      });
+  }
+});
+
+// Test function for theme toggle (call from console: testThemeToggle())
+window.testThemeToggle = function() {
+  const toggleThemeBtn = document.getElementById('toggleTheme');
+  if (toggleThemeBtn) {
+    console.log('🧪 Test: Theme button exists, clicking...');
+    toggleThemeBtn.click();
+  } else {
+    console.error('🧪 Test: Theme button not found!');
+  }
+};
+</script>
+
+<style>
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
+.animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+
+@keyframes gradientText {
+  0%,100% { background-position:0% 50%; }
+  50% { background-position:100% 50%; }
+}
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientText 3s ease infinite;
+}
+
+.status-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.6);
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.status-dot--ok {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+.status-dot--warn {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
+.status-dot--error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  background: rgba(148, 163, 184, 0.18);
+  color: rgba(71, 85, 105, 0.9);
+}
+
+.status-chip--ok {
+  background: rgba(34, 197, 94, 0.16);
+  color: #15803d;
+}
+
+.status-chip--warn {
+  background: rgba(249, 115, 22, 0.16);
+  color: #c2410c;
+}
+
+.status-chip--error {
+  background: rgba(239, 68, 68, 0.16);
+  color: #b91c1c;
+}
+
+.status-label {
+  font-size: 0.75rem;
+  color: rgba(71, 85, 105, 0.9);
+}
+
+.status-row {
+  padding: 0.9rem 1.1rem;
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.dark .status-row {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(71, 85, 105, 0.4);
+}
+
+.stat-card {
+  border-radius: 1rem;
+  padding: 1rem 1.2rem;
+  background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(37,99,235,0.03));
+}
+
+.dark .stat-card {
+  background: linear-gradient(135deg, rgba(30,64,175,0.35), rgba(30,64,175,0.15));
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(71, 85, 105, 0.85);
+}
+
+.dark .stat-label {
+  color: rgba(203, 213, 225, 0.7);
+}
+
+.stat-value {
+  margin-top: 0.4rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dark .stat-value {
+  color: #f8fafc;
+}
+
+.progress-track {
+  width: 100%;
+  height: 0.6rem;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.3);
+  overflow: hidden;
+}
+
+.dark .progress-track {
+  background: rgba(71, 85, 105, 0.45);
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+.progress-bar--blue {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.progress-bar--pink {
+  background: linear-gradient(135deg, #ec4899, #c026d3);
+}
+</style>
+
+</body>
+</html>
