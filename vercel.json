@@ -1,8 +1,8 @@
 {
   "version": 2,
   "rootDirectory": "healthchain-pro",
-  "buildCommand": "echo 'Static site'",
-  "installCommand": "echo 'No install needed'",
+  "installCommand": "echo 'Skip install'",
+  "buildCommand": "echo 'Static site - no build needed'",
   "framework": null,
   "routes": [
     {
