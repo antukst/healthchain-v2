@@ -67,6 +67,13 @@ class IPFSManager {
 
   // Add encrypted data to IPFS (Dual upload: Local + Pinata)
   async addData(encryptedData, mirrorOptions = undefined) {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📤 IPFS addData called');
+    console.log('Data length:', encryptedData?.length || 'N/A');
+    console.log('Mirror options:', mirrorOptions);
+    console.log('IPFS connected:', this.isConnected);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
     const uploadResults = {
       local: null,
       pinata: null,
@@ -76,25 +83,32 @@ class IPFSManager {
     // Try Local IPFS first
     if (this.isConnected) {
       try {
+        console.log('🔄 Starting local IPFS upload...');
         const result = await this.ipfs.add({ 
           content: encryptedData,
           pin: true  // Pin to local node so it appears in Files
         });
         uploadResults.local = result.cid.toString();
-        console.log('✅ Local IPFS upload:', uploadResults.local);
+        console.log('✅ Local IPFS upload successful:', uploadResults.local);
         
         // Always mirror to MFS for visibility in IPFS Desktop
         const mfsOptions = mirrorOptions || {
           filename: `patient_${Date.now()}.json`,
           folder: '/healthchain/patients'
         };
+        console.log('🔄 Calling _mirrorToMfs with options:', mfsOptions);
         const mfsPath = await this._mirrorToMfs(uploadResults.local, mfsOptions);
         if (mfsPath) {
-          console.log('📁 Added to IPFS Desktop Files:', mfsPath);
+          console.log('✅ Added to IPFS Desktop Files:', mfsPath);
+        } else {
+          console.warn('⚠️ MFS mirror returned null');
         }
       } catch (error) {
-        console.warn('⚠️ Local IPFS upload failed:', error.message);
+        console.error('❌ Local IPFS upload failed:', error);
+        console.error('Error stack:', error.stack);
       }
+    } else {
+      console.warn('⚠️ IPFS not connected, skipping local upload');
     }
 
     // Try Pinata Cloud backup
