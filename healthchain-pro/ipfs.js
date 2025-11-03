@@ -76,12 +76,21 @@ class IPFSManager {
     // Try Local IPFS first
     if (this.isConnected) {
       try {
-        const result = await this.ipfs.add({ content: encryptedData });
+        const result = await this.ipfs.add({ 
+          content: encryptedData,
+          pin: true  // Pin to local node so it appears in Files
+        });
         uploadResults.local = result.cid.toString();
         console.log('✅ Local IPFS upload:', uploadResults.local);
         
-        if (mirrorOptions !== null) {
-          await this._mirrorToMfs(uploadResults.local, mirrorOptions);
+        // Always mirror to MFS for visibility in IPFS Desktop
+        const mfsOptions = mirrorOptions || {
+          filename: `patient_${Date.now()}.json`,
+          folder: '/healthchain/patients'
+        };
+        const mfsPath = await this._mirrorToMfs(uploadResults.local, mfsOptions);
+        if (mfsPath) {
+          console.log('📁 Added to IPFS Desktop Files:', mfsPath);
         }
       } catch (error) {
         console.warn('⚠️ Local IPFS upload failed:', error.message);
@@ -191,18 +200,25 @@ class IPFSManager {
 
       const result = await this.ipfs.add({
         path: file.name,
-        content: file
+        content: file,
+        pin: true  // Pin so it stays in local node
       });
 
-      console.log('File added to IPFS:', result.cid.toString());
-      if (mirrorOptions !== null) {
-        await this._mirrorToMfs(result.cid.toString(), mirrorOptions || {
-          filename: file.name,
-          folder: '/healthchain/uploads'
-        });
+      const cid = result.cid.toString();
+      console.log('📄 File added to IPFS:', cid, '-', file.name);
+      
+      // Always mirror to MFS for IPFS Desktop visibility
+      const mfsOptions = mirrorOptions || {
+        filename: file.name,
+        folder: '/healthchain/uploads'
+      };
+      const mfsPath = await this._mirrorToMfs(cid, mfsOptions);
+      if (mfsPath) {
+        console.log('📁 File visible in IPFS Desktop:', mfsPath);
       }
+      
       return {
-        cid: result.cid.toString(),
+        cid: cid,
         path: result.path,
         size: result.size
       };
@@ -266,18 +282,23 @@ class IPFSManager {
     const parentPath = targetPath.includes('/') ? targetPath.substring(0, targetPath.lastIndexOf('/')) || '/' : '/';
 
     try {
+      // Create directory if doesn't exist
       await this._ensureMfsDir(parentPath);
+      
+      // Remove existing file if present
       try {
         await this.ipfs.files.rm(targetPath, { recursive: true });
       } catch (rmErr) {
-        if (!(rmErr?.code === 'ERR_NOT_FOUND' || /does not exist/i.test(rmErr?.message || ''))) {
-          console.warn('Failed to remove existing MFS path:', targetPath, rmErr);
-        }
+        // File doesn't exist, that's fine
       }
+
+      // Copy CID to MFS (this makes it visible in IPFS Desktop Files tab)
       await this.ipfs.files.cp(`/ipfs/${cid}`, targetPath);
+      console.log(`📂 MFS: ${targetPath}`);
+      
       return targetPath;
     } catch (err) {
-      console.warn('Failed to mirror CID to MFS:', cid, err);
+      console.warn('⚠️ Failed to mirror to MFS:', err);
       return null;
     }
   }
