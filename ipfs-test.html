@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPFS Desktop Connection Tester</title>
+<script src="https://unpkg.com/ipfs-http-client@59.0.0/dist/index.min.js"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    color: white;
+  }
+  .card {
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    padding: 25px;
+    border-radius: 10px;
+    margin: 20px 0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px;
+    transition: transform 0.2s;
+  }
+  button:hover {
+    transform: scale(1.05);
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .status {
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-weight: bold;
+  }
+  .success { background: #d4edda; color: #155724; }
+  .error { background: #f8d7da; color: #721c24; }
+  .warning { background: #fff3cd; color: #856404; }
+  .info { background: #d1ecf1; color: #0c5460; }
+  pre {
+    background: #f4f4f4;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  h1 { margin: 0 0 10px 0; }
+  h2 { color: #667eea; margin-top: 20px; }
+  .step {
+    background: #f8f9fa;
+    padding: 15px;
+    border-left: 4px solid #667eea;
+    margin: 10px 0;
+    border-radius: 5px;
+  }
+</style>
+</head>
+<body>
+<h1>🔍 IPFS Desktop Connection Diagnostic Tool</h1>
+<p>এই tool দিয়ে IPFS Desktop connection test করুন এবং সমস্যা খুঁজে বের করুন</p>
+
+<div class="card">
+  <h2>Step 1: IPFS Desktop Status Check</h2>
+  <button onclick="checkIPFSDesktop()">🔍 Check IPFS Desktop</button>
+  <div id="statusResult"></div>
+</div>
+
+<div class="card">
+  <h2>Step 2: Upload Test File</h2>
+  <button onclick="uploadTestFile()" id="uploadBtn" disabled>📤 Upload Test to IPFS Desktop</button>
+  <div id="uploadResult"></div>
+</div>
+
+<div class="card">
+  <h2>Step 3: Check Files in MFS</h2>
+  <button onclick="listMFSFiles()" id="listBtn" disabled>📂 List Files in /healthchain/</button>
+  <div id="listResult"></div>
+</div>
+
+<div class="card">
+  <h2>🛠️ CORS Configuration Fix</h2>
+  <div class="step">
+    <strong>যদি IPFS Desktop connect না হয়, এই steps follow করুন:</strong>
+    <ol>
+      <li>IPFS Desktop খুলুন</li>
+      <li><strong>Settings</strong> → <strong>IPFS Config</strong> যান</li>
+      <li>খুঁজুন: <code>"API"</code> section</li>
+      <li>যদি <code>"HTTPHeaders"</code> না থাকে, এটা add করুন:</li>
+    </ol>
+    <pre>{
+  "API": {
+    "HTTPHeaders": {
+      "Access-Control-Allow-Origin": ["*"],
+      "Access-Control-Allow-Methods": ["POST", "GET", "PUT"],
+      "Access-Control-Allow-Headers": ["Content-Type"]
+    }
+  }
+}</pre>
+    <ol start="5">
+      <li><strong>Save</strong> করুন</li>
+      <li>IPFS Desktop সম্পূর্ণ <strong>বন্ধ করুন</strong> (system tray → Quit)</li>
+      <li>IPFS Desktop <strong>আবার চালু করুন</strong></li>
+      <li>এই page <strong>refresh</strong> করুন (F5)</li>
+      <li>আবার <strong>Step 1</strong> test করুন</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+let ipfs = null;
+let isConnected = false;
+
+async function checkIPFSDesktop() {
+  const resultDiv = document.getElementById('statusResult');
+  resultDiv.innerHTML = '<div class="status info">🔄 Testing connection...</div>';
+  
+  const endpoints = [
+    { host: '127.0.0.1', port: 5001, protocol: 'http', label: 'Localhost (127.0.0.1)' },
+    { host: 'localhost', port: 5001, protocol: 'http', label: 'Localhost (localhost)' },
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      console.log(`Testing ${endpoint.label}...`);
+      
+      ipfs = window.IpfsHttpClient.create({
+        host: endpoint.host,
+        port: endpoint.port,
+        protocol: endpoint.protocol,
+        timeout: 5000
+      });
+
+      const id = await ipfs.id();
+      
+      resultDiv.innerHTML = `
+        <div class="status success">
+          ✅ <strong>IPFS Desktop Connected!</strong><br>
+          Endpoint: ${endpoint.protocol}://${endpoint.host}:${endpoint.port}<br>
+          Peer ID: ${id.id}<br>
+          Agent: ${id.agentVersion || 'Unknown'}
+        </div>
+      `;
+      
+      isConnected = true;
+      document.getElementById('uploadBtn').disabled = false;
+      document.getElementById('listBtn').disabled = false;
+      return;
+      
+    } catch (error) {
+      console.error(`Failed ${endpoint.label}:`, error);
+    }
+  }
+  
+  resultDiv.innerHTML = `
+    <div class="status error">
+      ❌ <strong>IPFS Desktop NOT Connected</strong><br><br>
+      <strong>সমস্যা:</strong> CORS permission blocked বা IPFS Desktop চালু নেই<br><br>
+      <strong>সমাধান:</strong><br>
+      1. নিশ্চিত করুন IPFS Desktop চালু আছে (system tray এ green icon)<br>
+      2. CORS configuration add করুন (নিচে দেখুন)<br>
+      3. IPFS Desktop restart করুন<br>
+      4. এই page refresh করুন
+    </div>
+    <pre>${error ? error.message : 'Connection refused'}</pre>
+  `;
+}
+
+async function uploadTestFile() {
+  if (!isConnected || !ipfs) {
+    alert('First connect to IPFS Desktop (Step 1)');
+    return;
+  }
+  
+  const resultDiv = document.getElementById('uploadResult');
+  resultDiv.innerHTML = '<div class="status info">🔄 Uploading test file...</div>';
+  
+  try {
+    const testData = JSON.stringify({
+      test: 'HealthChain IPFS Test',
+      timestamp: new Date().toISOString(),
+      patient: 'Test Patient',
+      message: 'যদি আপনি এটা দেখতে পাচ্ছেন, তাহলে IPFS ঠিকভাবে কাজ করছে!'
+    });
+    
+    // Upload with pin
+    const result = await ipfs.add({
+      content: testData,
+      pin: true
+    });
+    
+    const cid = result.cid.toString();
+    console.log('Uploaded CID:', cid);
+    
+    // Try to add to MFS
+    try {
+      const targetPath = `/healthchain/test_${Date.now()}.json`;
+      
+      // Create directory
+      try {
+        await ipfs.files.mkdir('/healthchain', { parents: true });
+      } catch (e) {
+        // Directory might already exist
+      }
+      
+      // Copy to MFS
+      await ipfs.files.cp(`/ipfs/${cid}`, targetPath);
+      
+      resultDiv.innerHTML = `
+        <div class="status success">
+          ✅ <strong>Upload Successful!</strong><br><br>
+          <strong>CID:</strong> ${cid}<br>
+          <strong>MFS Path:</strong> ${targetPath}<br><br>
+          <strong>এখন IPFS Desktop চেক করুন:</strong><br>
+          Files → /healthchain/ folder → test file দেখা যাবে!
+        </div>
+      `;
+      
+    } catch (mfsError) {
+      resultDiv.innerHTML = `
+        <div class="status warning">
+          ⚠️ <strong>Partial Success</strong><br><br>
+          File uploaded to IPFS but MFS copy failed:<br>
+          <strong>CID:</strong> ${cid}<br>
+          <strong>Error:</strong> ${mfsError.message}<br><br>
+          File আছে IPFS এ কিন্তু Files tab এ দেখা যাবে না।
+        </div>
+      `;
+    }
+    
+  } catch (error) {
+    resultDiv.innerHTML = `
+      <div class="status error">
+        ❌ <strong>Upload Failed</strong><br>
+        ${error.message}
+      </div>
+      <pre>${error.stack}</pre>
+    `;
+  }
+}
+
+async function listMFSFiles() {
+  if (!isConnected || !ipfs) {
+    alert('First connect to IPFS Desktop (Step 1)');
+    return;
+  }
+  
+  const resultDiv = document.getElementById('listResult');
+  resultDiv.innerHTML = '<div class="status info">🔄 Listing files...</div>';
+  
+  try {
+    const files = [];
+    
+    for await (const file of ipfs.files.ls('/healthchain', { long: true })) {
+      files.push(file);
+    }
+    
+    if (files.length === 0) {
+      resultDiv.innerHTML = `
+        <div class="status warning">
+          ⚠️ <strong>No files found in /healthchain/</strong><br><br>
+          First upload a test file (Step 2)
+        </div>
+      `;
+      return;
+    }
+    
+    let fileList = '<ul>';
+    files.forEach(file => {
+      fileList += `
+        <li>
+          <strong>${file.name}</strong><br>
+          CID: ${file.cid}<br>
+          Size: ${file.size} bytes<br>
+          Type: ${file.type}
+        </li>
+      `;
+    });
+    fileList += '</ul>';
+    
+    resultDiv.innerHTML = `
+      <div class="status success">
+        ✅ <strong>Found ${files.length} file(s) in /healthchain/</strong>
+        ${fileList}
+      </div>
+    `;
+    
+  } catch (error) {
+    if (error.message.includes('does not exist') || error.message.includes('not found')) {
+      resultDiv.innerHTML = `
+        <div class="status warning">
+          ⚠️ <strong>/healthchain/ folder doesn't exist yet</strong><br><br>
+          Upload a test file first (Step 2) to create the folder.
+        </div>
+      `;
+    } else {
+      resultDiv.innerHTML = `
+        <div class="status error">
+          ❌ <strong>Error listing files:</strong><br>
+          ${error.message}
+        </div>
+        <pre>${error.stack}</pre>
+      `;
+    }
+  }
+}
+
+// Auto-run on page load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    checkIPFSDesktop();
+  }, 500);
+});
+</script>
+
+</body>
+</html>
