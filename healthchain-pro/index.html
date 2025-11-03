@@ -40,40 +40,64 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-500">
 
 <!-- Header -->
-<header class="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-800 dark:to-purple-900 p-6 text-white shadow-md flex flex-col sm:flex-row justify-between items-center">
-  <div class="text-center sm:text-left">
-    <h1 class="text-4xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-500 to-purple-500 animate-gradient">HealthChain Pro</h1>
-    <p class="mt-2 text-[0.7rem] uppercase tracking-[0.35em] text-white/70">Decentralized Healthcare System</p>
-    <p class="mt-1 text-xs uppercase tracking-[0.25em] text-white/80">Dev by Antu</p>
-  </div>
-  <div class="flex items-center space-x-4 mt-2 sm:mt-0">
-    <!-- User Authentication Display -->
-    <div class="flex items-center space-x-2">
-  <button id="profileBtn" class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-sm font-medium hover:bg-white/25 transition" title="View profile" aria-expanded="false" aria-controls="profilePanel">
-        <span id="userDisplay" class="text-sm">Not signed in</span>
-        <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m6 9 6 6 6-6" />
+<header class="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-800 dark:to-purple-900 p-4 sm:p-6 text-white shadow-md relative">
+  <div class="max-w-7xl mx-auto">
+    <!-- Top Right Corner Controls - 3 Buttons in Row -->
+    <div class="absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-1.5 z-10">
+      <!-- Language Toggle -->
+      <button id="toggleLanguage" class="group relative px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500/30 to-cyan-500/30 hover:from-emerald-500/50 hover:to-cyan-500/50 backdrop-blur-md border border-white/30 text-white transition-all duration-300 text-xs font-semibold shadow-lg hover:shadow-emerald-500/50 hover:scale-105 transform" title="Switch Language">
+        <span id="currentLang" class="inline-block transition-transform duration-300 group-hover:rotate-12">EN</span>
+        <span class="inline-block ml-0.5 animate-pulse">🌐</span>
+      </button>
+      
+      <!-- Dark Mode Toggle -->
+      <button id="toggleTheme" class="group relative p-2 rounded-lg bg-gradient-to-br from-purple-500/30 to-pink-500/30 hover:from-purple-500/50 hover:to-pink-500/50 backdrop-blur-md border border-white/30 text-white transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-purple-500/50 hover:scale-105 transform hover:rotate-12" aria-label="Toggle color theme">
+        <svg id="sunIcon" class="w-4 h-4 transition-transform duration-500 group-hover:rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v-2m0 19v-2m7.5-7.5h2m-19 0h2m12.02 5.02 1.42 1.42m-14.08-14.1 1.42 1.42m0 11.26-1.42 1.42m14.1-14.08-1.42 1.42M12 7.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z" />
+        </svg>
+        <svg id="moonIcon" class="w-4 h-4 hidden transition-transform duration-500 group-hover:-rotate-12" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M17.293 13.293a8 8 0 0 1-10.586-10.586A8 8 0 1 0 17.293 13.293Z" />
         </svg>
       </button>
-      <button id="authBtn" class="px-3 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-sm font-semibold hover:bg-white/25 transition">Sign In</button>
-      <button id="logoutBtn" class="hidden p-2 rounded-full bg-white/12 backdrop-blur text-white hover:bg-white/25 transition" title="Sign out">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-        </svg>
+      
+      <!-- Backup Button (BU) -->
+      <button id="backupBtn" class="group relative px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/30 to-orange-500/30 hover:from-amber-500/50 hover:to-orange-500/50 backdrop-blur-md border border-white/30 text-white text-xs font-semibold transition-all duration-300 shadow-lg hover:shadow-amber-500/50 hover:scale-105 transform overflow-hidden" title="Backup & Restore">
+        <span class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
+        <span class="relative flex items-center gap-1">
+          <span class="inline-block transition-transform duration-300 group-hover:rotate-12">💾</span>
+          <span>BU</span>
+        </span>
       </button>
     </div>
-    <div id="systemStatus" class="flex space-x-2 text-xs">
-      <span id="ipfsStatus" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600">IPFS: ⏳</span>
-      <span id="blockchainStatus" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600">Polygon: ⏳</span>
+    
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="text-center sm:text-left">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-500 to-purple-500 animate-gradient">HealthChain Pro</h1>
+        <p class="mt-1 sm:mt-2 text-[0.6rem] sm:text-[0.7rem] uppercase tracking-[0.25em] sm:tracking-[0.35em] text-white/70">Decentralized Healthcare System</p>
+        <p class="mt-0.5 sm:mt-1 text-[0.65rem] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white/80">Dev by Antu</p>
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+        <!-- User Authentication Display -->
+        <div class="flex items-center gap-2">
+    <button id="profileBtn" class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-sm font-medium hover:bg-white/25 transition" title="View profile" aria-expanded="false" aria-controls="profilePanel">
+          <span id="userDisplay" class="text-sm">Not signed in</span>
+          <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+        <button id="authBtn" class="px-3 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-sm font-semibold hover:bg-white/25 transition">Sign In</button>
+        <button id="logoutBtn" class="hidden p-2 rounded-full bg-white/12 backdrop-blur text-white hover:bg-white/25 transition" title="Sign out">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+          </svg>
+        </button>
+      </div>
+      <div id="systemStatus" class="flex flex-wrap gap-2 text-xs justify-center sm:justify-start">
+        <span id="ipfsStatus" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 whitespace-nowrap">IPFS: ⏳</span>
+        <span id="blockchainStatus" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 whitespace-nowrap">Polygon: ⏳</span>
+      </div>
     </div>
-    <button id="toggleTheme" class="p-2 rounded-full bg-white/20 hover:bg-white/30 dark:bg-white/10 dark:hover:bg-white/20 text-white transition flex items-center justify-center" aria-label="Toggle color theme">
-      <svg id="sunIcon" class="w-5 h-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v-2m0 19v-2m7.5-7.5h2m-19 0h2m12.02 5.02 1.42 1.42m-14.08-14.1 1.42 1.42m0 11.26-1.42 1.42m14.1-14.08-1.42 1.42M12 7.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z" />
-      </svg>
-      <svg id="moonIcon" class="w-5 h-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M17.293 13.293a8 8 0 0 1-10.586-10.586A8 8 0 1 0 17.293 13.293Z" />
-      </svg>
-    </button>
+    </div>
   </div>
 </header>
 
