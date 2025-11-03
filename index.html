@@ -81,56 +81,56 @@
 </header>
 
 <!-- Add Patient Section -->
-<section id="addPatientSection" data-requires-auth="true" data-requires-write="true" class="p-4 sm:p-6 max-w-5xl mx-auto mt-4 sm:mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg animate-fadeIn hidden">
-<h2 class="text-xl sm:text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">Add New Patient</h2>
-<form id="patientForm" class="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
-  <input type="text" name="name" placeholder="Patient Name" class="p-2 sm:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm sm:text-base" required>
-  <input type="number" name="age" placeholder="Age" class="p-2 sm:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm sm:text-base" required>
-  <input type="text" name="gender" placeholder="Gender" class="p-2 sm:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm sm:text-base">
-  <input type="text" name="diagnosis" placeholder="Diagnosis" class="p-2 sm:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm sm:text-base" required>
-  <input type="text" name="prescription" placeholder="Prescription ID" class="p-2 sm:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm sm:text-base">
-  <input type="text" name="room" placeholder="Room Number" class="p-2 sm:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm sm:text-base">
-  <textarea name="medical_history" placeholder="Medical History" class="p-2 sm:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 col-span-1 sm:col-span-2 text-sm sm:text-base" rows="3"></textarea>
-  <input type="text" name="allergies" placeholder="Allergies" class="p-2 sm:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm sm:text-base">
-  <input type="text" name="emergency_contact" placeholder="Emergency Contact" class="p-2 sm:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm sm:text-base">
-  <input type="file" name="photo" class="p-2 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm" accept="image/*">
-  <button type="submit" class="col-span-1 sm:col-span-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-blue-500 hover:to-purple-500 text-white font-bold px-4 py-2 sm:py-3 rounded-lg shadow-lg transition transform hover:scale-105 text-sm sm:text-base">Add Patient Securely</button>
+<section id="addPatientSection" data-requires-auth="true" data-requires-write="true" class="p-3 sm:p-4 md:p-6 max-w-5xl mx-auto mt-3 sm:mt-4 md:mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg animate-fadeIn hidden">
+<h2 class="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-purple-600 dark:text-purple-400">Add New Patient</h2>
+<form id="patientForm" class="grid gap-2.5 sm:gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2">
+  <input type="text" name="name" placeholder="Patient Name" class="p-2 sm:p-2.5 md:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-xs sm:text-sm md:text-base" required>
+  <input type="number" name="age" placeholder="Age" class="p-2 sm:p-2.5 md:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-xs sm:text-sm md:text-base" required>
+  <input type="text" name="gender" placeholder="Gender" class="p-2 sm:p-2.5 md:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-xs sm:text-sm md:text-base">
+  <input type="text" name="diagnosis" placeholder="Diagnosis" class="p-2 sm:p-2.5 md:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-xs sm:text-sm md:text-base" required>
+  <input type="text" name="prescription" placeholder="Prescription ID" class="p-2 sm:p-2.5 md:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-xs sm:text-sm md:text-base">
+  <input type="text" name="room" placeholder="Room Number" class="p-2 sm:p-2.5 md:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-xs sm:text-sm md:text-base">
+  <textarea name="medical_history" placeholder="Medical History" class="p-2 sm:p-2.5 md:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 col-span-1 sm:col-span-2 text-xs sm:text-sm md:text-base" rows="3"></textarea>
+  <input type="text" name="allergies" placeholder="Allergies" class="p-2 sm:p-2.5 md:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-xs sm:text-sm md:text-base">
+  <input type="text" name="emergency_contact" placeholder="Emergency Contact" class="p-2 sm:p-2.5 md:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-xs sm:text-sm md:text-base">
+  <input type="file" name="photo" class="p-2 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-purple-400 text-xs sm:text-sm" accept="image/*">
+  <button type="submit" class="col-span-1 sm:col-span-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-blue-500 hover:to-purple-500 text-white font-bold px-4 py-2 sm:py-2.5 md:py-3 rounded-lg shadow-lg transition transform hover:scale-105 text-xs sm:text-sm md:text-base">Add Patient Securely</button>
 </form>
 </section>
 
 <!-- Stats Section -->
-<section id="statsSection" data-requires-auth="true" class="p-4 sm:p-6 max-w-5xl mx-auto mt-4 sm:mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg animate-fadeIn hidden">
-<h2 class="text-xl sm:text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">Stats & Analytics</h2>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-  <div class="p-3 sm:p-4 bg-gradient-to-br from-blue-200 to-blue-400 dark:from-blue-900 dark:to-blue-700 rounded-lg shadow hover:scale-105 transition transform">
-    <p class="text-xs sm:text-sm">Total Patients</p>
-    <p id="totalPatients" class="text-2xl sm:text-3xl font-bold">0</p>
+<section id="statsSection" data-requires-auth="true" class="p-3 sm:p-4 md:p-6 max-w-5xl mx-auto mt-3 sm:mt-4 md:mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg animate-fadeIn hidden">
+<h2 class="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-purple-600 dark:text-purple-400">Stats & Analytics</h2>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 md:gap-4">
+  <div class="p-3 sm:p-3.5 md:p-4 bg-gradient-to-br from-blue-200 to-blue-400 dark:from-blue-900 dark:to-blue-700 rounded-lg shadow hover:scale-105 transition transform">
+    <p class="text-[10px] sm:text-xs md:text-sm">Total Patients</p>
+    <p id="totalPatients" class="text-xl sm:text-2xl md:text-3xl font-bold">0</p>
   </div>
-  <div class="p-3 sm:p-4 bg-gradient-to-br from-green-200 to-green-400 dark:from-green-900 dark:to-green-700 rounded-lg shadow hover:scale-105 transition transform">
-    <p class="text-xs sm:text-sm">Average Age</p>
-    <p id="avgAge" class="text-2xl sm:text-3xl font-bold">0</p>
+  <div class="p-3 sm:p-3.5 md:p-4 bg-gradient-to-br from-green-200 to-green-400 dark:from-green-900 dark:to-green-700 rounded-lg shadow hover:scale-105 transition transform">
+    <p class="text-[10px] sm:text-xs md:text-sm">Average Age</p>
+    <p id="avgAge" class="text-xl sm:text-2xl md:text-3xl font-bold">0</p>
   </div>
-  <div class="p-3 sm:p-4 bg-gradient-to-br from-red-200 to-red-400 dark:from-red-900 dark:to-red-700 rounded-lg shadow hover:scale-105 transition transform">
-    <p class="text-xs sm:text-sm">Critical Cases</p>
-    <p id="criticalCases" class="text-2xl sm:text-3xl font-bold">0</p>
+  <div class="p-3 sm:p-3.5 md:p-4 bg-gradient-to-br from-red-200 to-red-400 dark:from-red-900 dark:to-red-700 rounded-lg shadow hover:scale-105 transition transform">
+    <p class="text-[10px] sm:text-xs md:text-sm">Critical Cases</p>
+    <p id="criticalCases" class="text-xl sm:text-2xl md:text-3xl font-bold">0</p>
   </div>
 </div>
-<div class="mt-4 sm:mt-6 grid grid-cols-1 xl:grid-cols-3 gap-3 sm:gap-4">
-  <div class="xl:col-span-1 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
-    <h3 class="text-lg font-semibold text-purple-600 dark:text-purple-300 mb-3">Disease Distribution</h3>
-    <div class="h-64">
+<div class="mt-3 sm:mt-4 md:mt-6 grid grid-cols-1 xl:grid-cols-3 gap-2.5 sm:gap-3 md:gap-4">
+  <div class="xl:col-span-1 bg-gray-50 dark:bg-gray-700 p-3 sm:p-3.5 md:p-4 rounded-lg shadow-inner">
+    <h3 class="text-sm sm:text-base md:text-lg font-semibold text-purple-600 dark:text-purple-300 mb-2 sm:mb-3">Disease Distribution</h3>
+    <div class="h-48 sm:h-56 md:h-64">
       <canvas id="diseaseChart" class="rounded-lg"></canvas>
     </div>
   </div>
-  <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
-    <h3 class="text-lg font-semibold text-purple-600 dark:text-purple-300 mb-3">Record Type Breakdown</h3>
-    <div class="h-64">
+  <div class="bg-gray-50 dark:bg-gray-700 p-3 sm:p-3.5 md:p-4 rounded-lg shadow-inner">
+    <h3 class="text-sm sm:text-base md:text-lg font-semibold text-purple-600 dark:text-purple-300 mb-2 sm:mb-3">Record Type Breakdown</h3>
+    <div class="h-48 sm:h-56 md:h-64">
       <canvas id="testTypeChart" class="rounded-lg"></canvas>
     </div>
   </div>
-  <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
-    <h3 class="text-lg font-semibold text-purple-600 dark:text-purple-300 mb-3">Monthly Upload Trend</h3>
-    <div class="h-64">
+  <div class="bg-gray-50 dark:bg-gray-700 p-3 sm:p-3.5 md:p-4 rounded-lg shadow-inner">
+    <h3 class="text-sm sm:text-base md:text-lg font-semibold text-purple-600 dark:text-purple-300 mb-2 sm:mb-3">Monthly Upload Trend</h3>
+    <div class="h-48 sm:h-56 md:h-64">
       <canvas id="monthlyTrendChart" class="rounded-lg"></canvas>
     </div>
   </div>
@@ -138,31 +138,31 @@
 </section>
 
 <!-- Patient List & Search -->
-<section id="searchSection" data-requires-auth="true" class="p-4 sm:p-6 max-w-full mx-auto mt-4 sm:mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg animate-fadeIn hidden overflow-x-auto">
-<h2 class="text-xl sm:text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">Patients</h2>
-<div class="flex flex-col sm:flex-row gap-3 sm:gap-0 sm:justify-between sm:items-center mb-4">
-  <input type="text" id="searchInput" placeholder="Search by name, diagnosis, ID..." class="flex-1 p-2 sm:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 sm:mr-4 text-sm sm:text-base">
-  <div class="flex flex-wrap gap-2">
-    <button id="deleteSelectedBtn" data-requires-delete="true" class="bg-red-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded hover:bg-red-600 disabled:opacity-50 text-xs sm:text-sm whitespace-nowrap" disabled>Delete Selected</button>
-    <button id="exportBtn" data-requires-write="true" class="bg-green-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded hover:bg-green-600 disabled:opacity-50 text-xs sm:text-sm whitespace-nowrap">Export</button>
-    <button id="importBtn" data-requires-write="true" class="bg-orange-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded hover:bg-orange-600 disabled:opacity-50 text-xs sm:text-sm whitespace-nowrap">Import</button>
-    <button id="importTextBtn" data-requires-write="true" class="bg-purple-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded hover:bg-purple-600 disabled:opacity-50 text-xs sm:text-sm whitespace-nowrap">Import Text</button>
+<section id="searchSection" data-requires-auth="true" class="p-3 sm:p-4 md:p-6 max-w-full mx-auto mt-3 sm:mt-4 md:mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg animate-fadeIn hidden">
+<h2 class="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-purple-600 dark:text-purple-400">Patients</h2>
+<div class="flex flex-col gap-2 sm:gap-3 mb-3 sm:mb-4">
+  <input type="text" id="searchInput" placeholder="Search by name, diagnosis, ID..." class="w-full p-2 sm:p-2.5 md:p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-xs sm:text-sm md:text-base">
+  <div class="flex flex-wrap gap-1.5 sm:gap-2">
+    <button id="deleteSelectedBtn" data-requires-delete="true" class="bg-red-500 text-white px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded hover:bg-red-600 disabled:opacity-50 text-[10px] sm:text-xs md:text-sm whitespace-nowrap flex-1 sm:flex-none" disabled>Delete Selected</button>
+    <button id="exportBtn" data-requires-write="true" class="bg-green-500 text-white px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded hover:bg-green-600 disabled:opacity-50 text-[10px] sm:text-xs md:text-sm whitespace-nowrap flex-1 sm:flex-none">Export</button>
+    <button id="importBtn" data-requires-write="true" class="bg-orange-500 text-white px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded hover:bg-orange-600 disabled:opacity-50 text-[10px] sm:text-xs md:text-sm whitespace-nowrap flex-1 sm:flex-none">Import</button>
+    <button id="importTextBtn" data-requires-write="true" class="bg-purple-500 text-white px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded hover:bg-purple-600 disabled:opacity-50 text-[10px] sm:text-xs md:text-sm whitespace-nowrap flex-1 sm:flex-none">Import Text</button>
   </div>
 </div>
 
-<div class="overflow-x-auto -mx-4 sm:mx-0">
-<table class="min-w-full border-collapse border border-gray-300 dark:border-gray-600 text-xs sm:text-sm">
-<thead class="bg-gray-200 dark:bg-gray-700">
+<div class="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
+<table class="min-w-full border-collapse border border-gray-300 dark:border-gray-600 text-[10px] sm:text-xs md:text-sm">
+<thead class="bg-gray-200 dark:bg-gray-700 sticky top-0">
 <tr>
-  <th class="border px-2 sm:px-4 py-2"><input type="checkbox" id="selectAllCheckbox" class="cursor-pointer" title="Select All"></th>
-  <th class="border px-2 sm:px-4 py-2 whitespace-nowrap">ID</th>
-  <th class="border px-2 sm:px-4 py-2 whitespace-nowrap">Name</th>
-  <th class="border px-2 sm:px-4 py-2">Age</th>
-  <th class="border px-2 sm:px-4 py-2 whitespace-nowrap">Gender</th>
-  <th class="border px-2 sm:px-4 py-2 whitespace-nowrap">Diagnosis</th>
-  <th class="border px-2 sm:px-4 py-2 whitespace-nowrap">Prescription</th>
-  <th class="border px-2 sm:px-4 py-2 whitespace-nowrap">Date Added</th>
-  <th class="border px-2 sm:px-4 py-2 whitespace-nowrap">Actions</th>
+  <th class="border border-gray-300 dark:border-gray-600 px-1.5 sm:px-2 md:px-4 py-1.5 sm:py-2"><input type="checkbox" id="selectAllCheckbox" class="cursor-pointer w-3 h-3 sm:w-4 sm:h-4" title="Select All"></th>
+  <th class="border border-gray-300 dark:border-gray-600 px-1.5 sm:px-2 md:px-4 py-1.5 sm:py-2 whitespace-nowrap text-left">ID</th>
+  <th class="border border-gray-300 dark:border-gray-600 px-1.5 sm:px-2 md:px-4 py-1.5 sm:py-2 whitespace-nowrap text-left">Name</th>
+  <th class="border border-gray-300 dark:border-gray-600 px-1.5 sm:px-2 md:px-4 py-1.5 sm:py-2 text-left">Age</th>
+  <th class="border border-gray-300 dark:border-gray-600 px-1.5 sm:px-2 md:px-4 py-1.5 sm:py-2 whitespace-nowrap text-left hidden md:table-cell">Gender</th>
+  <th class="border border-gray-300 dark:border-gray-600 px-1.5 sm:px-2 md:px-4 py-1.5 sm:py-2 whitespace-nowrap text-left">Diagnosis</th>
+  <th class="border border-gray-300 dark:border-gray-600 px-1.5 sm:px-2 md:px-4 py-1.5 sm:py-2 whitespace-nowrap text-left hidden lg:table-cell">Prescription</th>
+  <th class="border border-gray-300 dark:border-gray-600 px-1.5 sm:px-2 md:px-4 py-1.5 sm:py-2 whitespace-nowrap text-left hidden xl:table-cell">Date Added</th>
+  <th class="border border-gray-300 dark:border-gray-600 px-1.5 sm:px-2 md:px-4 py-1.5 sm:py-2 whitespace-nowrap text-center">Actions</th>
 </tr>
 </thead>
 <tbody id="patientList">
@@ -173,52 +173,52 @@
 </section>
 
 <!-- Medical Records Section -->
-<section id="medicalRecordsSection" data-requires-auth="true" data-requires-write="true" data-patient-access="self" class="p-4 sm:p-6 max-w-5xl mx-auto mt-4 sm:mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg animate-fadeIn hidden">
-  <div class="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+<section id="medicalRecordsSection" data-requires-auth="true" data-requires-write="true" data-patient-access="self" class="p-3 sm:p-4 md:p-6 max-w-5xl mx-auto mt-3 sm:mt-4 md:mt-6 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg animate-fadeIn hidden">
+  <div class="flex flex-col gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-6">
     <div>
-      <h2 class="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-300">Medical Records Upload</h2>
-      <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1">Securely attach lab reports, diagnostics and prescriptions. Files are encrypted locally, pinned to IPFS and notarized on Polygon for tamper-proof history.</p>
+      <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-purple-600 dark:text-purple-300">Medical Records Upload</h2>
+      <p class="text-[10px] sm:text-xs md:text-sm text-gray-600 dark:text-gray-300 mt-0.5 sm:mt-1 leading-tight sm:leading-normal">Securely attach lab reports, diagnostics and prescriptions. Files are encrypted locally, pinned to IPFS and notarized on Polygon for tamper-proof history.</p>
     </div>
-    <div class="flex flex-wrap items-center gap-2 text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-white">
-      <span class="px-3 py-1 rounded-full bg-blue-500/40 dark:bg-blue-400/30 backdrop-blur">End-to-end encrypted</span>
-      <span class="px-3 py-1 rounded-full bg-purple-500/40 dark:bg-purple-400/30 backdrop-blur">IPFS • Polygon</span>
+    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] md:text-[11px] font-semibold uppercase tracking-wider sm:tracking-widest text-white">
+      <span class="px-2 sm:px-2.5 md:px-3 py-0.5 sm:py-1 rounded-full bg-blue-500/40 dark:bg-blue-400/30 backdrop-blur">End-to-end encrypted</span>
+      <span class="px-2 sm:px-2.5 md:px-3 py-0.5 sm:py-1 rounded-full bg-purple-500/40 dark:bg-purple-400/30 backdrop-blur">IPFS • Polygon</span>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
     <!-- Upload Area -->
-    <div class="space-y-6">
-      <div class="bg-gradient-to-br from-purple-500/25 via-indigo-500/10 to-purple-500/10 p-[1px] rounded-2xl shadow-md">
-        <div class="rounded-2xl bg-white dark:bg-gray-900/70 border border-white/60 dark:border-gray-700/60 p-6">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+    <div class="space-y-4 sm:space-y-5 md:space-y-6">
+      <div class="bg-gradient-to-br from-purple-500/25 via-indigo-500/10 to-purple-500/10 p-[1px] rounded-xl sm:rounded-2xl shadow-md">
+        <div class="rounded-xl sm:rounded-2xl bg-white dark:bg-gray-900/70 border border-white/60 dark:border-gray-700/60 p-3 sm:p-4 md:p-6">
+          <div class="flex flex-col gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-5">
             <div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Drop files or browse</h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400">PDF, DOCX, PNG, JPG, TXT • up to 10MB each</p>
+              <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white">Drop files or browse</h3>
+              <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">PDF, DOCX, PNG, JPG, TXT • up to 10MB each</p>
             </div>
-            <button id="selectFilesBtn" data-requires-write="true" class="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm shadow">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.5 12h15M12 4.5v15"/></svg>
+            <button id="selectFilesBtn" data-requires-write="true" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm shadow w-full sm:w-auto">
+              <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.5 12h15M12 4.5v15"/></svg>
               Browse files
             </button>
           </div>
 
-          <div id="fileUploadArea" class="rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/60 p-8 text-center cursor-pointer hover:border-purple-400 dark:hover:border-purple-400 transition-all">
+          <div id="fileUploadArea" class="rounded-lg sm:rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/60 p-4 sm:p-6 md:p-8 text-center cursor-pointer hover:border-purple-400 dark:hover:border-purple-400 transition-all">
             <div class="text-gray-500 dark:text-gray-400">
-              <svg class="mx-auto h-14 w-14 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="mx-auto h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 mb-2 sm:mb-3 md:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 0 1-.88-7.903A5 5 0 1 1 15.9 6H16a5 5 0 0 1 1 9.9M15 13l-3-3m0 0-3 3m3-3v12" />
               </svg>
-              <p class="text-base font-semibold">Drag &amp; drop documents</p>
-              <p class="text-xs">or tap to select from your device</p>
+              <p class="text-xs sm:text-sm md:text-base font-semibold">Drag &amp; drop documents</p>
+              <p class="text-[10px] sm:text-xs">or tap to select from your device</p>
             </div>
           </div>
 
           <input type="file" id="medicalFilesInput" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.txt,image/*" class="hidden">
 
-          <div class="mt-5">
-            <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Selected files</h4>
-            <div id="selectedFiles" class="space-y-3"></div>
+          <div class="mt-3 sm:mt-4 md:mt-5">
+            <h4 class="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2 sm:mb-3">Selected files</h4>
+            <div id="selectedFiles" class="space-y-2 sm:space-y-3"></div>
           </div>
 
-          <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="mt-4 sm:mt-5 md:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div class="space-y-2">
               <div class="relative">
                 <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400 dark:text-gray-500">
@@ -245,23 +245,23 @@
 
           <p id="recordPatientHint" class="mt-2 text-xs text-gray-500 dark:text-gray-400">Select a patient profile to enable uploads.</p>
 
-          <div class="mt-4 space-y-3">
-            <input type="text" id="selectedFileName" data-requires-write="true" placeholder="Friendly file name or summary" class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
-            <textarea id="recordDescription" data-requires-write="true" rows="2" placeholder="Optional notes for care team" class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"></textarea>
+          <div class="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
+            <input type="text" id="selectedFileName" data-requires-write="true" placeholder="Friendly file name or summary" class="w-full rounded-lg sm:rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+            <textarea id="recordDescription" data-requires-write="true" rows="2" placeholder="Optional notes for care team" class="w-full rounded-lg sm:rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"></textarea>
           </div>
 
-          <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <div class="mt-4 sm:mt-5 md:mt-6 flex flex-col gap-2 sm:gap-3">
+            <div class="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 justify-center sm:justify-start">
               <span class="status-dot status-dot--ok"></span>
               Files encrypted before upload
             </div>
-            <div class="flex gap-3">
-              <button id="refreshPatientsBtn" data-requires-write="true" class="inline-flex items-center justify-center gap-2 rounded-full border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.5 4.5v6h6m9-1a9 9 0 1 0-3 6.708"/></svg>
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <button id="refreshPatientsBtn" data-requires-write="true" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full border border-gray-300 dark:border-gray-600 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full sm:w-auto">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.5 4.5v6h6m9-1a9 9 0 1 0-3 6.708"/></svg>
                 Refresh patients
               </button>
-              <button id="uploadRecordsBtn" data-requires-write="true" class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shadow disabled:opacity-50" disabled>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v15m0 0 5.25-5.25M12 19.5 6.75 14.25"/></svg>
+              <button id="uploadRecordsBtn" data-requires-write="true" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold shadow disabled:opacity-50 w-full sm:w-auto" disabled>
+                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v15m0 0 5.25-5.25M12 19.5 6.75 14.25"/></svg>
                 Upload records
               </button>
             </div>
@@ -271,11 +271,11 @@
     </div>
 
     <!-- Stats and Health Indicators -->
-    <div class="space-y-6">
-      <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/70 p-5 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">System Health</h3>
-          <span class="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">Realtime</span>
+    <div class="space-y-4 sm:space-y-5 md:space-y-6">
+      <div class="rounded-xl sm:rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/70 p-3 sm:p-4 md:p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3 sm:mb-4">
+          <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white">System Health</h3>
+          <span class="text-[9px] sm:text-[10px] md:text-xs font-semibold uppercase tracking-wider sm:tracking-widest text-gray-500 dark:text-gray-400">Realtime</span>
         </div>
         <div class="space-y-3">
           <div class="status-row">
@@ -330,20 +330,20 @@
         </div>
       </div>
 
-      <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-5 shadow-sm space-y-5">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="rounded-xl sm:rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3 sm:p-4 md:p-5 shadow-sm space-y-3 sm:space-y-4 md:space-y-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div class="stat-card">
             <p class="stat-label">Total Records</p>
-            <p id="totalRecords" class="stat-value">0</p>
+            <p id="totalRecords" class="stat-value text-xl sm:text-2xl md:text-3xl">0</p>
           </div>
           <div class="stat-card">
             <p class="stat-label">Last Updated</p>
-            <p id="lastUpdated" class="stat-value text-base">--:--</p>
+            <p id="lastUpdated" class="stat-value text-sm sm:text-base">--:--</p>
           </div>
         </div>
 
         <div>
-          <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Gender Distribution</h4>
+          <h4 class="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3">Gender Distribution</h4>
           <div class="space-y-3">
             <div>
               <div class="flex justify-between text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -373,47 +373,47 @@
 <!-- Profile Mega Panel -->
 <div id="profilePanel" class="hidden fixed inset-0 z-50">
   <div id="profileOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-  <div class="absolute right-0 top-0 h-full w-full sm:w-[26rem] bg-white dark:bg-gray-900 shadow-xl border-l border-white/20 dark:border-gray-700/60 transform transition-transform duration-300 translate-x-full" id="profileDrawer">
-    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-200/60 dark:border-gray-700/50">
+  <div class="absolute right-0 top-0 h-full w-full sm:w-[22rem] md:w-[26rem] bg-white dark:bg-gray-900 shadow-xl border-l border-white/20 dark:border-gray-700/60 transform transition-transform duration-300 translate-x-full" id="profileDrawer">
+    <div class="flex items-center justify-between px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 border-b border-gray-200/60 dark:border-gray-700/50">
       <div>
-        <p class="text-xs uppercase tracking-[0.35em] text-purple-500 dark:text-purple-300">Profile</p>
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="profileName">Guest</h3>
+        <p class="text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.25em] sm:tracking-[0.35em] text-purple-500 dark:text-purple-300">Profile</p>
+        <h3 class="text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-white" id="profileName">Guest</h3>
       </div>
-      <button id="closeProfilePanel" class="p-2 rounded-full bg-gray-100/60 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700" aria-label="Close profile">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18 18 6M6 6l12 12" /></svg>
+      <button id="closeProfilePanel" class="p-1.5 sm:p-2 rounded-full bg-gray-100/60 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700" aria-label="Close profile">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18 18 6M6 6l12 12" /></svg>
       </button>
     </div>
-    <div class="px-6 py-5 space-y-6 overflow-y-auto h-[calc(100%-5.5rem)]">
-      <div class="flex items-center gap-4">
-        <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white text-xl font-semibold" id="profileAvatar">--</div>
+    <div class="px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 space-y-4 sm:space-y-5 md:space-y-6 overflow-y-auto h-[calc(100%-4.5rem)] sm:h-[calc(100%-5rem)] md:h-[calc(100%-5.5rem)]">
+      <div class="flex items-center gap-3 sm:gap-4">
+        <div class="flex h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white text-base sm:text-lg md:text-xl font-semibold" id="profileAvatar">--</div>
         <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Signed in as</p>
-          <p class="text-base font-semibold text-gray-900 dark:text-gray-100" id="profileUsername">guest</p>
+          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Signed in as</p>
+          <p class="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100" id="profileUsername">guest</p>
         </div>
       </div>
 
-      <div class="rounded-2xl border border-gray-200/70 dark:border-gray-700/60 bg-gray-50/80 dark:bg-gray-800/70 p-5">
-        <p class="text-xs font-semibold uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400 mb-3">Current role</p>
-        <div class="flex items-center gap-3">
-          <span class="inline-flex items-center px-3 py-1 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-200 text-xs font-semibold uppercase" id="profileRole">guest</span>
-          <span class="text-xs text-gray-500 dark:text-gray-400" id="profileAccess">Read only</span>
+      <div class="rounded-xl sm:rounded-2xl border border-gray-200/70 dark:border-gray-700/60 bg-gray-50/80 dark:bg-gray-800/70 p-3 sm:p-4 md:p-5">
+        <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.25em] text-gray-500 dark:text-gray-400 mb-2 sm:mb-3">Current role</p>
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <span class="inline-flex items-center px-2 sm:px-2.5 md:px-3 py-0.5 sm:py-1 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-200 text-[10px] sm:text-xs font-semibold uppercase" id="profileRole">guest</span>
+          <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400" id="profileAccess">Read only</span>
         </div>
       </div>
 
-      <div class="rounded-2xl border border-gray-200/70 dark:border-gray-700/60 bg-white dark:bg-gray-900/70 p-5">
-        <p class="text-xs font-semibold uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400 mb-3">Permissions</p>
-        <ul id="profilePermissions" class="space-y-2 text-sm text-gray-700 dark:text-gray-200">
+      <div class="rounded-xl sm:rounded-2xl border border-gray-200/70 dark:border-gray-700/60 bg-white dark:bg-gray-900/70 p-3 sm:p-4 md:p-5">
+        <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.25em] text-gray-500 dark:text-gray-400 mb-2 sm:mb-3">Permissions</p>
+        <ul id="profilePermissions" class="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200">
           <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> None</li>
         </ul>
       </div>
 
-      <div class="rounded-2xl border border-gray-200/70 dark:border-gray-700/60 bg-gray-50/80 dark:bg-gray-800/80 p-5 space-y-4">
+      <div class="rounded-xl sm:rounded-2xl border border-gray-200/70 dark:border-gray-700/60 bg-gray-50/80 dark:bg-gray-800/80 p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400">Session</p>
-          <p class="text-sm text-gray-700 dark:text-gray-300" id="profileSession">Not signed in</p>
+          <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.25em] text-gray-500 dark:text-gray-400">Session</p>
+          <p class="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mt-1" id="profileSession">Not signed in</p>
         </div>
-        <button id="profileSignOut" class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-red-500/15 text-red-600 dark:text-red-300 px-4 py-2 text-sm font-semibold hover:bg-red-500/25 transition" type="button">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m15 12 3-3m0 0-3-3m3 3H9m6 6v3.75A2.25 2.25 0 0 1 12.75 21h-6A2.25 2.25 0 0 1 4.5 18.75V5.25A2.25 2.25 0 0 1 6.75 3h6A2.25 2.25 0 0 1 15 5.25V9" /></svg>
+        <button id="profileSignOut" class="w-full inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-red-500/15 text-red-600 dark:text-red-300 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold hover:bg-red-500/25 transition" type="button">
+          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m15 12 3-3m0 0-3-3m3 3H9m6 6v3.75A2.25 2.25 0 0 1 12.75 21h-6A2.25 2.25 0 0 1 4.5 18.75V5.25A2.25 2.25 0 0 1 6.75 3h6A2.25 2.25 0 0 1 15 5.25V9" /></svg>
           Sign out
         </button>
       </div>
@@ -503,6 +503,27 @@ window.testThemeToggle = function() {
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradientText 3s ease infinite;
+}
+
+/* Custom scrollbar for better mobile experience */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.7);
+}
+.dark .scrollbar-thumb-gray-600::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.5);
+}
+.dark .scrollbar-thumb-gray-600::-webkit-scrollbar-thumb:hover {
+  background: rgba(55, 65, 81, 0.7);
 }
 
 .status-dot {
