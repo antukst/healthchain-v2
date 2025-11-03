@@ -2111,7 +2111,7 @@ function createImportTextMegaPanel() {
         
         <textarea id="importTextArea" 
           class="w-full h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm" 
-          placeholder="Name\tAge\tGender\tDiagnosis\tPrescription\nJohn Doe\t45\tMale\tHypertension\tRX-001\nJane Smith\t32\tFemale\tDiabetes\tRX-002"></textarea>
+          placeholder="Patient Name\tAge\tGender\tDiagnosis\tPrescription ID\tRoom Number\tMedical History\tAllergies\tEmergency Contact"></textarea>
         
         <div class="mt-4 flex space-x-4">
           <button id="importTextDataBtn" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold">Import Data</button>
@@ -2123,6 +2123,21 @@ function createImportTextMegaPanel() {
     `;
     
     document.body.appendChild(panel);
+
+    const sampleImportText = `Patient Name\tAge\tGender\tDiagnosis\tPrescription ID\tRoom Number\tMedical History\tAllergies\tEmergency Contact
+Rahim Uddin\t45\tMale\tType 2 Diabetes\tRXBD1001\t203\tHypertension\tPenicillin\t01712-445566
+Ayesha Khatun\t29\tFemale\tMigraine\tRXBD1002\t112\tAsthma (childhood)\tNone\t01819-776655
+Hasan Mahmud\t62\tMale\tHeart Disease\tRXBD1003\t305\tHigh Cholesterol\tDust allergy\t01788-221199
+Fatema Begum\t37\tFemale\tHypothyroidism\tRXBD1004\t214\tNone\tSeafood\t01911-654321
+Imran Hossain\t50\tMale\tArthritis\tRXBD1005\t410\tDiabetes\tNone\t01713-889977
+Nasrin Akter\t26\tFemale\tDengue Fever\tRXBD1006\t107\tNone\tParacetamol\t01820-554433
+Shahidul Islam\t33\tMale\tGastric Ulcer\tRXBD1007\t216\tNone\tNone\t01740-667788
+Mitu Rahman\t41\tFemale\tHypertension\tRXBD1008\t222\tHigh BP (family)\tDust allergy\t01920-445577
+Rafiq Ahmed\t56\tMale\tChronic Kidney Disease\tRXBD1009\t312\tDiabetes, BP\tPenicillin\t01770-333444
+Jannatul Ferdous\t23\tFemale\tViral Fever\tRXBD1010\t109\tNone\tNone\t01817-998877
+Nur Alam\t65\tMale\tAsthma\tRXBD1011\t401\tCOPD\tPollen\t01760-551122
+Shila Parvin\t30\tFemale\tAnemia\tRXBD1012\t205\tIron Deficiency\tNone\t01815-772233`;
+    document.getElementById('importTextArea').value = sampleImportText;
     
     // Event listeners
     document.getElementById('closeImportTextPanel').addEventListener('click', () => {
