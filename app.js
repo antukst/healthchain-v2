@@ -896,22 +896,25 @@ function renderPatientList(patients) {
     const truncatedId = shortId.length > 8 ? shortId.substring(0, 8) + '...' : shortId;
 
     row.innerHTML = `
-      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-center">
-        <input type="checkbox" class="patient-checkbox w-4 h-4 cursor-pointer" value="${patient._id}" ${checkboxDisabled}>
+      <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 text-center">
+        <input type="checkbox" class="patient-checkbox w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" value="${patient._id}" ${checkboxDisabled}>
       </td>
-      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm">
-        <span class="hidden sm:inline">${shortId}</span>
-        <span class="sm:hidden">${truncatedId}</span>
-        ${blockchainIcon} <span class="records-icon">${recordsIcon}</span>
+      <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 text-gray-900 dark:text-white text-[10px] sm:text-xs md:text-sm">
+        <div class="flex items-center gap-0.5 sm:gap-1">
+          <span class="hidden sm:inline">${shortId}</span>
+          <span class="sm:hidden">${truncatedId}</span>
+          <span class="text-[10px] sm:text-xs md:text-base">${blockchainIcon}</span>
+          <span class="records-icon text-[10px] sm:text-xs md:text-base">${recordsIcon}</span>
+        </div>
       </td>
-      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm">${sanitizeField(patient.metadata?.name, 'N/A')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm">${sanitizeField(patient.metadata?.age, 'N/A')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm hidden md:table-cell">${sanitizeField(patient.metadata?.gender, 'N/A')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm">${sanitizeField(patient.metadata?.diagnosis, 'Not specified')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm hidden lg:table-cell">${sanitizeField(patient.metadata?.prescription, 'N/A')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm hidden xl:table-cell">${formatDate(patient.metadata?.created_at, 'N/A')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white">
-        <div class="flex items-center gap-1 sm:gap-2 flex-wrap">
+      <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 text-gray-900 dark:text-white text-[10px] sm:text-xs md:text-sm max-w-[80px] sm:max-w-none truncate">${sanitizeField(patient.metadata?.name, 'N/A')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 text-gray-900 dark:text-white text-[10px] sm:text-xs md:text-sm text-center">${sanitizeField(patient.metadata?.age, 'N/A')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 text-gray-900 dark:text-white text-[10px] sm:text-xs md:text-sm hidden md:table-cell">${sanitizeField(patient.metadata?.gender, 'N/A')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 text-gray-900 dark:text-white text-[10px] sm:text-xs md:text-sm max-w-[100px] sm:max-w-[150px] md:max-w-none truncate">${sanitizeField(patient.metadata?.diagnosis, 'Not specified')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 text-gray-900 dark:text-white text-[10px] sm:text-xs md:text-sm hidden lg:table-cell">${sanitizeField(patient.metadata?.prescription, 'N/A')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 text-gray-900 dark:text-white text-[10px] sm:text-xs md:text-sm hidden xl:table-cell">${formatDate(patient.metadata?.created_at, 'N/A')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2">
+        <div class="flex items-center justify-center gap-0.5 sm:gap-1 md:gap-2 flex-wrap">
           ${actionButtons}
         </div>
       </td>
