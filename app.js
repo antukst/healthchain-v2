@@ -13,6 +13,16 @@ let itemsPerPage = 10;
 let allPatients = [];
 let filteredPatients = [];
 
+// Filter state
+let activeFilters = {
+  dateFrom: null,
+  dateTo: null,
+  ageGroup: null,
+  gender: null,
+  diagnosis: null
+};
+let savedFilterPresets = JSON.parse(localStorage.getItem('filterPresets') || '[]');
+
 // Small helper to sanitize fields coming from legacy data
 function sanitizeField(value, fallback = 'N/A') {
   if (value === undefined || value === null) return fallback;
@@ -998,6 +1008,195 @@ function changeItemsPerPage(newItemsPerPage) {
   currentPage = 1; // Reset to first page
   renderPatientList(filteredPatients);
 }
+
+// ========== ADVANCED FILTERS ==========
+
+// Apply filters to patient list
+function applyAdvancedFilters() {
+  const dateFrom = document.getElementById('filterDateFrom')?.value;
+  const dateTo = document.getElementById('filterDateTo')?.value;
+  const ageGroup = document.getElementById('filterAgeGroup')?.value;
+  const gender = document.getElementById('filterGender')?.value;
+  const diagnosis = document.getElementById('filterDiagnosis')?.value.trim().toLowerCase();
+  
+  // Update active filters
+  activeFilters = { dateFrom, dateTo, ageGroup, gender, diagnosis };
+  
+  // Filter patients
+  let filtered = [...allPatients];
+  
+  // Date range filter
+  if (dateFrom) {
+    const fromDate = new Date(dateFrom);
+    filtered = filtered.filter(p => {
+      const patientDate = new Date(p.metadata?.created_at || p.created_at);
+      return patientDate >= fromDate;
+    });
+  }
+  
+  if (dateTo) {
+    const toDate = new Date(dateTo);
+    toDate.setHours(23, 59, 59, 999); // End of day
+    filtered = filtered.filter(p => {
+      const patientDate = new Date(p.metadata?.created_at || p.created_at);
+      return patientDate <= toDate;
+    });
+  }
+  
+  // Age group filter
+  if (ageGroup) {
+    filtered = filtered.filter(p => {
+      const age = parseInt(p.metadata?.age || p.age);
+      if (isNaN(age)) return false;
+      
+      if (ageGroup === '0-18') return age >= 0 && age <= 18;
+      if (ageGroup === '19-40') return age >= 19 && age <= 40;
+      if (ageGroup === '41-60') return age >= 41 && age <= 60;
+      if (ageGroup === '60+') return age >= 60;
+      return true;
+    });
+  }
+  
+  // Gender filter
+  if (gender) {
+    filtered = filtered.filter(p => {
+      const patientGender = (p.metadata?.gender || p.gender || '').trim();
+      return patientGender.toLowerCase() === gender.toLowerCase();
+    });
+  }
+  
+  // Diagnosis filter
+  if (diagnosis) {
+    filtered = filtered.filter(p => {
+      const patientDiagnosis = (p.metadata?.diagnosis || p.diagnosis || '').toLowerCase();
+      return patientDiagnosis.includes(diagnosis);
+    });
+  }
+  
+  // Reset to first page and render
+  currentPage = 1;
+  renderPatientList(filtered);
+  
+  // Update active filters display
+  updateActiveFiltersDisplay();
+  
+  showNotification(`Found ${filtered.length} patient(s) matching filters`, 'success');
+}
+
+// Clear all filters
+function clearAllFilters() {
+  activeFilters = { dateFrom: null, dateTo: null, ageGroup: null, gender: null, diagnosis: null };
+  
+  // Reset form
+  document.getElementById('filterDateFrom').value = '';
+  document.getElementById('filterDateTo').value = '';
+  document.getElementById('filterAgeGroup').value = '';
+  document.getElementById('filterGender').value = '';
+  document.getElementById('filterDiagnosis').value = '';
+  
+  // Reset to all patients
+  currentPage = 1;
+  renderPatientList(allPatients);
+  
+  // Clear display
+  updateActiveFiltersDisplay();
+  
+  showNotification('All filters cleared', 'info');
+}
+
+// Update active filters display
+function updateActiveFiltersDisplay() {
+  const display = document.getElementById('activeFiltersDisplay');
+  if (!display) return;
+  
+  display.innerHTML = '';
+  
+  const filters = [];
+  if (activeFilters.dateFrom) filters.push(`From: ${activeFilters.dateFrom}`);
+  if (activeFilters.dateTo) filters.push(`To: ${activeFilters.dateTo}`);
+  if (activeFilters.ageGroup) filters.push(`Age: ${activeFilters.ageGroup}`);
+  if (activeFilters.gender) filters.push(`Gender: ${activeFilters.gender}`);
+  if (activeFilters.diagnosis) filters.push(`Diagnosis: ${activeFilters.diagnosis}`);
+  
+  if (filters.length === 0) {
+    display.innerHTML = '<span class="text-xs text-gray-500 dark:text-gray-400">No active filters</span>';
+    return;
+  }
+  
+  filters.forEach(filter => {
+    const tag = document.createElement('span');
+    tag.className = 'inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-xs rounded-full';
+    tag.textContent = filter;
+    display.appendChild(tag);
+  });
+}
+
+// Save filter preset
+function saveFilterPreset() {
+  const hasActiveFilters = Object.values(activeFilters).some(v => v);
+  if (!hasActiveFilters) {
+    showNotification('No filters to save', 'warning');
+    return;
+  }
+  
+  const presetName = prompt('Enter a name for this filter preset:');
+  if (!presetName || !presetName.trim()) return;
+  
+  const preset = {
+    name: presetName.trim(),
+    filters: { ...activeFilters },
+    createdAt: new Date().toISOString()
+  };
+  
+  savedFilterPresets.push(preset);
+  localStorage.setItem('filterPresets', JSON.stringify(savedFilterPresets));
+  
+  updateFilterPresetDropdown();
+  showNotification(`Filter preset "${presetName}" saved!`, 'success');
+}
+
+// Load filter preset
+function loadFilterPreset(presetName) {
+  const preset = savedFilterPresets.find(p => p.name === presetName);
+  if (!preset) return;
+  
+  // Apply preset values to form
+  document.getElementById('filterDateFrom').value = preset.filters.dateFrom || '';
+  document.getElementById('filterDateTo').value = preset.filters.dateTo || '';
+  document.getElementById('filterAgeGroup').value = preset.filters.ageGroup || '';
+  document.getElementById('filterGender').value = preset.filters.gender || '';
+  document.getElementById('filterDiagnosis').value = preset.filters.diagnosis || '';
+  
+  // Apply filters
+  applyAdvancedFilters();
+  
+  showNotification(`Loaded preset "${presetName}"`, 'success');
+}
+
+// Update filter preset dropdown
+function updateFilterPresetDropdown() {
+  const dropdown = document.getElementById('loadFilterPreset');
+  if (!dropdown) return;
+  
+  dropdown.innerHTML = '<option value="">Load Saved Preset...</option>';
+  
+  savedFilterPresets.forEach(preset => {
+    const option = document.createElement('option');
+    option.value = preset.name;
+    option.textContent = preset.name;
+    dropdown.appendChild(option);
+  });
+}
+
+// Toggle filters panel
+function toggleFiltersPanel() {
+  const panel = document.getElementById('advancedFiltersPanel');
+  if (!panel) return;
+  
+  panel.classList.toggle('hidden');
+}
+
+// ========== END ADVANCED FILTERS ==========
 
 // Handle patient form submission
 document.getElementById('patientForm').addEventListener('submit', async (e) => {
@@ -2108,6 +2307,40 @@ document.addEventListener('DOMContentLoaded', () => {
       changeItemsPerPage(e.target.value);
     });
   }
+  
+  // Advanced Filters controls
+  const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
+  const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+  const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+  const saveFilterPresetBtn = document.getElementById('saveFilterPresetBtn');
+  const loadFilterPresetSelect = document.getElementById('loadFilterPreset');
+  
+  if (toggleFiltersBtn) {
+    toggleFiltersBtn.addEventListener('click', toggleFiltersPanel);
+  }
+  
+  if (applyFiltersBtn) {
+    applyFiltersBtn.addEventListener('click', applyAdvancedFilters);
+  }
+  
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', clearAllFilters);
+  }
+  
+  if (saveFilterPresetBtn) {
+    saveFilterPresetBtn.addEventListener('click', saveFilterPreset);
+  }
+  
+  if (loadFilterPresetSelect) {
+    loadFilterPresetSelect.addEventListener('change', (e) => {
+      if (e.target.value) {
+        loadFilterPreset(e.target.value);
+      }
+    });
+  }
+  
+  // Initialize filter preset dropdown
+  updateFilterPresetDropdown();
   
   if (authBtn) authBtn.addEventListener('click', () => showAuthModal(false));
   if (logoutBtn) logoutBtn.addEventListener('click', () => logoutUser());
