@@ -917,6 +917,7 @@ function renderPatientList(patients) {
 
     // Build action buttons based on permissions
     let actionButtons = `<button onclick="viewPatientDetails('${patient._id}')" class="inline-flex items-center bg-blue-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-blue-600 whitespace-nowrap">View</button>`;
+    actionButtons += ` <button onclick="showPatientQRCode('${patient._id}')" class="inline-flex items-center bg-teal-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-teal-600 whitespace-nowrap" title="Generate QR Code">QR</button>`;
     if (perms.includes('write')) {
       actionButtons += ` <button onclick="editPatient('${patient._id}')" class="inline-flex items-center bg-yellow-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-yellow-600 whitespace-nowrap">Edit</button>`;
       actionButtons += ` <button onclick="sharePatient('${patient._id}')" class="inline-flex items-center bg-purple-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-purple-600 whitespace-nowrap hidden sm:inline-flex">Share</button>`;
@@ -1811,6 +1812,167 @@ document.getElementById('searchInput').addEventListener('input', async (e) => {
     showNotification('Search failed', 'error');
   }
 });
+
+// ========== QR CODE SYSTEM ==========
+
+// Show patient QR code
+async function showPatientQRCode(patientId) {
+  try {
+    const patient = await securePatientDB.getPatient(patientId);
+    const patientName = sanitizeField(patient.metadata?.name || patient.name, 'Unknown');
+    
+    // Create QR code data with patient information
+    const qrData = {
+      id: patient._id,
+      name: patientName,
+      age: sanitizeField(patient.metadata?.age || patient.age, 'N/A'),
+      gender: sanitizeField(patient.metadata?.gender || patient.gender, 'N/A'),
+      diagnosis: sanitizeField(patient.metadata?.diagnosis || patient.diagnosis, 'N/A'),
+      url: `${window.location.origin}${window.location.pathname}?patient=${patient._id}`
+    };
+    
+    const qrString = JSON.stringify(qrData);
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">Patient QR Code</h3>
+          <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        
+        <div class="text-center">
+          <div class="mb-3">
+            <p class="text-lg font-semibold text-purple-600 dark:text-purple-400">${patientName}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">ID: ${patient._id.split('_')[1] || patient._id}</p>
+          </div>
+          
+          <!-- QR Code Container -->
+          <div class="flex justify-center mb-4 bg-white p-4 rounded-lg inline-block">
+            <div id="qrcode-${patient._id}" class="qr-code-container"></div>
+          </div>
+          
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Scan this QR code to quickly access patient information</p>
+          
+          <div class="flex gap-2 justify-center">
+            <button onclick="downloadQRCode('${patient._id}', '${patientName}')" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-semibold">
+              📥 Download QR
+            </button>
+            <button onclick="printQRCode('${patient._id}', '${patientName}')" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-semibold">
+              🖨️ Print Card
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Generate QR code after modal is in DOM
+    setTimeout(() => {
+      const qrContainer = document.getElementById(`qrcode-${patient._id}`);
+      if (qrContainer && typeof QRCode !== 'undefined') {
+        new QRCode(qrContainer, {
+          text: qrString,
+          width: 200,
+          height: 200,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      } else {
+        console.error('QR Code library not loaded or container not found');
+        qrContainer.innerHTML = '<p class="text-red-500">QR Code generation failed</p>';
+      }
+    }, 100);
+    
+  } catch (error) {
+    console.error('Failed to generate QR code:', error);
+    showNotification('Failed to generate QR code', 'error');
+  }
+}
+
+// Download QR code as image
+function downloadQRCode(patientId, patientName) {
+  const qrContainer = document.getElementById(`qrcode-${patientId}`);
+  if (!qrContainer) return;
+  
+  const canvas = qrContainer.querySelector('canvas');
+  if (!canvas) return;
+  
+  const link = document.createElement('a');
+  link.download = `QR_${patientName.replace(/\s+/g, '_')}_${patientId.split('_')[1] || patientId}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  
+  showNotification('QR Code downloaded!', 'success');
+}
+
+// Print patient card with QR code
+function printQRCode(patientId, patientName) {
+  const qrContainer = document.getElementById(`qrcode-${patientId}`);
+  if (!qrContainer) return;
+  
+  const canvas = qrContainer.querySelector('canvas');
+  if (!canvas) return;
+  
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Patient Card - ${patientName}</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          margin: 0;
+        }
+        .card {
+          border: 2px solid #333;
+          border-radius: 10px;
+          padding: 20px;
+          text-align: center;
+          max-width: 300px;
+        }
+        h2 { margin: 0 0 10px 0; color: #6B46C1; }
+        .subtitle { color: #666; font-size: 12px; margin-bottom: 20px; }
+        .qr-container { margin: 20px 0; }
+        .footer { margin-top: 15px; font-size: 10px; color: #999; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <h2>🏥 HealthChain Pro</h2>
+        <div class="subtitle">Patient Information Card</div>
+        <h3>${patientName}</h3>
+        <p style="font-size: 11px; color: #666;">ID: ${patientId.split('_')[1] || patientId}</p>
+        <div class="qr-container">
+          <img src="${canvas.toDataURL('image/png')}" alt="QR Code" style="max-width: 200px;">
+        </div>
+        <div class="footer">
+          Scan to access secure patient records<br>
+          Generated: ${new Date().toLocaleString()}
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => {
+    printWindow.print();
+  }, 250);
+}
+
+// ========== END QR CODE SYSTEM ==========
 
 // View patient details
 async function viewPatientDetails(patientId) {
