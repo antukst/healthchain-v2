@@ -8,10 +8,12 @@ class PolygonManager {
   }
 
   // Initialize Polygon connection
-  async init() {
+  async init(useTestnet = true) {
     try {
       // Check if MetaMask is available
       if (typeof window.ethereum !== 'undefined') {
+        console.log('🦊 MetaMask detected! Connecting...');
+        
         // Request account access
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         this.web3 = new Web3(window.ethereum);
@@ -19,15 +21,31 @@ class PolygonManager {
         // Get current account
         const accounts = await this.web3.eth.getAccounts();
         this.account = accounts[0];
+        console.log('👛 Wallet connected:', this.account);
 
-        // Switch to Polygon network
-        await this.switchToPolygon();
+        // Switch to Polygon network (default: Amoy testnet for free testing)
+        await this.switchToPolygon(useTestnet);
+
+        // Listen for account changes
+        window.ethereum.on('accountsChanged', (accounts) => {
+          this.account = accounts[0];
+          console.log('👛 Account changed:', this.account);
+        });
+
+        // Listen for network changes
+        window.ethereum.on('chainChanged', (chainId) => {
+          console.log('🔄 Network changed:', chainId);
+          window.location.reload(); // Recommended by MetaMask
+        });
 
         this.isConnected = true;
-        console.log('✅ Connected to Polygon network:', this.account);
+        const networkInfo = await this.getNetworkInfo();
+        console.log('✅ Connected to Polygon network:', networkInfo.network);
+        console.log('💰 Account balance:', await this.getBalance(), 'MATIC');
         return true;
       } else {
         console.warn('⚠️ MetaMask not detected. Using mock blockchain for demo.');
+        console.warn('💡 Install MetaMask: https://metamask.io/download/');
         this.isConnected = false;
         return false;
       }
@@ -38,36 +56,49 @@ class PolygonManager {
     }
   }
 
-  // Switch to Polygon network
-  async switchToPolygon() {
+  // Switch to Polygon network (use Amoy testnet for free testing)
+  async switchToPolygon(useTestnet = true) {
+    const networks = {
+      mainnet: {
+        chainId: '0x89',
+        chainName: 'Polygon Mainnet',
+        nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+        rpcUrls: ['https://polygon-rpc.com/', 'https://rpc-mainnet.maticvigil.com/'],
+        blockExplorerUrls: ['https://polygonscan.com/']
+      },
+      amoy: {
+        chainId: '0x13882', // 80002 in hex
+        chainName: 'Polygon Amoy Testnet',
+        nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+        rpcUrls: ['https://rpc-amoy.polygon.technology/', 'https://polygon-amoy-bor-rpc.publicnode.com'],
+        blockExplorerUrls: ['https://amoy.polygonscan.com/']
+      }
+    };
+
+    const network = useTestnet ? networks.amoy : networks.mainnet;
+
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x89' }], // Polygon Mainnet
+        params: [{ chainId: network.chainId }]
       });
+      console.log(`✅ Switched to ${network.chainName}`);
     } catch (switchError) {
-      // This error code indicates that the chain has not been added to MetaMask
+      // Chain not added to MetaMask
       if (switchError.code === 4902) {
         try {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: '0x89',
-              chainName: 'Polygon Mainnet',
-              nativeCurrency: {
-                name: 'MATIC',
-                symbol: 'MATIC',
-                decimals: 18
-              },
-              rpcUrls: ['https://polygon-rpc.com/'],
-              blockExplorerUrls: ['https://polygonscan.com/']
-            }]
+            params: [network]
           });
+          console.log(`✅ Added and switched to ${network.chainName}`);
         } catch (addError) {
-          console.error('Failed to add Polygon network:', addError);
+          console.error('❌ Failed to add Polygon network:', addError);
+          throw addError;
         }
       } else {
-        console.error('Failed to switch to Polygon network:', switchError);
+        console.error('❌ Failed to switch to Polygon network:', switchError);
+        throw switchError;
       }
     }
   }
@@ -191,7 +222,9 @@ class PolygonManager {
     try {
       const chainId = await this.web3.eth.getChainId();
       const networkName = chainId === 137 ? 'Polygon Mainnet' :
-                         chainId === 80001 ? 'Polygon Mumbai' : 'Unknown';
+                         chainId === 80002 ? 'Polygon Amoy Testnet' :
+                         chainId === 80001 ? 'Polygon Mumbai (Deprecated)' : 
+                         `Unknown (Chain ID: ${chainId})`;
 
       return {
         network: networkName,
@@ -201,6 +234,20 @@ class PolygonManager {
     } catch (error) {
       console.error('Failed to get network info:', error);
       return { network: 'error', chainId: null };
+    }
+  }
+
+  // Get account balance
+  async getBalance() {
+    if (!this.isConnected || !this.account) {
+      return '0';
+    }
+    try {
+      const balance = await this.web3.eth.getBalance(this.account);
+      return this.web3.utils.fromWei(balance, 'ether');
+    } catch (error) {
+      console.error('Failed to get balance:', error);
+      return '0';
     }
   }
 

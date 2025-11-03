@@ -4,6 +4,14 @@ class IPFSManager {
     this.ipfs = null;
     this.isConnected = false;
     this._dbPromise = null; // for IndexedDB fallback storage
+    
+    // Pinata Cloud Configuration (FREE tier - 1GB storage)
+    this.pinata = {
+      apiKey: 'YOUR_PINATA_API_KEY', // Get from https://app.pinata.cloud/keys
+      apiSecret: 'YOUR_PINATA_API_SECRET',
+      gateway: 'gateway.pinata.cloud',
+      enabled: false // Set true after adding your keys
+    };
   }
 
   // Initialize IPFS client with auto-detect local API
@@ -23,7 +31,12 @@ class IPFSManager {
           host: endpoint.host,
           port: endpoint.port,
           protocol: endpoint.protocol,
-          timeout: 10000 // 10 second timeout
+          timeout: 10000, // 10 second timeout
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          }
         });
 
         // Test connection with id() which is more reliable than version()
@@ -52,38 +65,81 @@ class IPFSManager {
     return false;
   }
 
-  // Add encrypted data to IPFS
+  // Add encrypted data to IPFS (Dual upload: Local + Pinata)
   async addData(encryptedData, mirrorOptions = undefined) {
-    try {
-      if (!this.isConnected) {
-        console.warn('⚠️ IPFS not connected, using local storage + blockchain hash');
-        // Store in IndexedDB and return local ID
-        const localId = await this._saveLocalData(encryptedData);
-        return `local:${localId}`;
-      }
+    const uploadResults = {
+      local: null,
+      pinata: null,
+      primary: null
+    };
 
-      const result = await this.ipfs.add({
-        content: encryptedData
-      });
-
-      console.log('✅ Data added to IPFS:', result.cid.toString());
-      if (mirrorOptions !== null) {
-        await this._mirrorToMfs(result.cid.toString(), mirrorOptions);
-      }
-      return result.cid.toString();
-    } catch (error) {
-      console.error('Failed to add data to IPFS:', error);
-      // Fallback: store locally
+    // Try Local IPFS first
+    if (this.isConnected) {
       try {
-        const localId = await this._saveLocalData(encryptedData);
-        console.log('📦 Data stored locally:', localId);
-        return `local:${localId}`;
-      } catch (dbErr) {
-        console.error('Local storage also failed:', dbErr);
-        // Last resort: return a hash-based ID
-        return 'Qm' + Math.random().toString(36).substr(2, 44);
+        const result = await this.ipfs.add({ content: encryptedData });
+        uploadResults.local = result.cid.toString();
+        console.log('✅ Local IPFS upload:', uploadResults.local);
+        
+        if (mirrorOptions !== null) {
+          await this._mirrorToMfs(uploadResults.local, mirrorOptions);
+        }
+      } catch (error) {
+        console.warn('⚠️ Local IPFS upload failed:', error.message);
       }
     }
+
+    // Try Pinata Cloud backup
+    if (this.pinata.enabled) {
+      try {
+        const pinataResult = await this._uploadToPinata(encryptedData);
+        uploadResults.pinata = pinataResult.IpfsHash;
+        console.log('☁️ Pinata Cloud backup:', uploadResults.pinata);
+      } catch (error) {
+        console.warn('⚠️ Pinata upload failed:', error.message);
+      }
+    }
+
+    // Determine primary CID
+    uploadResults.primary = uploadResults.local || uploadResults.pinata;
+
+    // Fallback to local storage if both IPFS methods fail
+    if (!uploadResults.primary) {
+      console.warn('⚠️ All IPFS uploads failed, using local storage');
+      const localId = await this._saveLocalData(encryptedData);
+      uploadResults.primary = `local:${localId}`;
+    }
+
+    console.log('📦 Upload complete:', uploadResults);
+    return uploadResults.primary;
+  }
+
+  // Upload to Pinata Cloud (FREE 1GB storage)
+  async _uploadToPinata(data) {
+    const url = 'https://api.pinata.cloud/pinning/pinJSONToIPFS';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'pinata_api_key': this.pinata.apiKey,
+        'pinata_secret_api_key': this.pinata.apiSecret
+      },
+      body: JSON.stringify({
+        pinataContent: { data: data },
+        pinataMetadata: {
+          name: `healthchain-${Date.now()}`,
+          keyvalues: {
+            app: 'HealthChain Pro',
+            timestamp: new Date().toISOString()
+          }
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Pinata upload failed: ${response.statusText}`);
+    }
+
+    return await response.json();
   }
 
   // Retrieve data from IPFS
