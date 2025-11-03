@@ -880,6 +880,160 @@ function updateSystemHealthIndicators() {
   setStatusDot(encryptionHealth, isSystemInitialized ? 'ok' : 'error');
 }
 
+// Helper: Get category color for file types
+function getCategoryColor(recordType) {
+  const colors = {
+    'lab_report': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    'xray': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+    'prescription': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    'diagnosis': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    'scan': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+    'other': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+  };
+  return colors[recordType] || colors['other'];
+}
+
+// Show image gallery with slider
+function showImageGallery(startIndex) {
+  const files = window.currentPatientFiles || [];
+  const imageFiles = files.filter((f, idx) => {
+    const isImage = f.type && (f.type.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.filename || ''));
+    if (isImage) f.originalIndex = idx;
+    return isImage;
+  });
+  
+  if (imageFiles.length === 0) return;
+  
+  let currentImageIndex = imageFiles.findIndex(f => f.originalIndex === startIndex) || 0;
+  
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-[60] p-4';
+  modal.id = 'imageGalleryModal';
+  
+  function renderGallery() {
+    const currentFile = imageFiles[currentImageIndex];
+    const blob = currentFile.data instanceof Blob ? currentFile.data : new Blob([currentFile.data], {type: currentFile.type || 'image/jpeg'});
+    const imageUrl = URL.createObjectURL(blob);
+    
+    modal.innerHTML = `
+      <div class="w-full h-full flex flex-col">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4 px-4">
+          <div class="text-white">
+            <h3 class="text-lg font-semibold">${currentFile.display_name || currentFile.filename || 'Image'}</h3>
+            <p class="text-sm text-gray-300">${currentImageIndex + 1} of ${imageFiles.length}</p>
+          </div>
+          <button onclick="document.getElementById('imageGalleryModal').remove()" class="text-white hover:text-gray-300 text-3xl">×</button>
+        </div>
+        
+        <!-- Image Container -->
+        <div class="flex-1 flex items-center justify-center relative">
+          ${imageFiles.length > 1 ? `
+            <button onclick="window.previousImage()" class="absolute left-4 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full p-3 text-2xl">
+              ←
+            </button>
+          ` : ''}
+          
+          <img src="${imageUrl}" alt="Medical Record" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+          
+          ${imageFiles.length > 1 ? `
+            <button onclick="window.nextImage()" class="absolute right-4 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full p-3 text-2xl">
+              →
+            </button>
+          ` : ''}
+        </div>
+        
+        <!-- Actions -->
+        <div class="flex justify-center gap-3 mt-4">
+          <button onclick="downloadFile(window.currentPatientFiles[${currentFile.originalIndex}].data, '${currentFile.display_name || currentFile.filename || 'image'}')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-semibold">
+            📥 Download
+          </button>
+        </div>
+      </div>
+    `;
+  }
+  
+  window.nextImage = () => {
+    currentImageIndex = (currentImageIndex + 1) % imageFiles.length;
+    renderGallery();
+  };
+  
+  window.previousImage = () => {
+    currentImageIndex = (currentImageIndex - 1 + imageFiles.length) % imageFiles.length;
+    renderGallery();
+  };
+  
+  document.body.appendChild(modal);
+  renderGallery();
+  
+  // Keyboard navigation
+  const handleKeyPress = (e) => {
+    if (e.key === 'ArrowRight') window.nextImage();
+    if (e.key === 'ArrowLeft') window.previousImage();
+    if (e.key === 'Escape') {
+      modal.remove();
+      document.removeEventListener('keydown', handleKeyPress);
+    }
+  };
+  document.addEventListener('keydown', handleKeyPress);
+}
+
+// View PDF inline
+function viewPDFInline(fileIndex) {
+  const file = window.currentPatientFiles[fileIndex];
+  if (!file) return;
+  
+  const blob = file.data instanceof Blob ? file.data : new Blob([file.data], {type: 'application/pdf'});
+  const pdfUrl = URL.createObjectURL(blob);
+  
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[60] p-4';
+  modal.innerHTML = `
+    <div class="w-full h-full flex flex-col bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
+      <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${file.display_name || file.filename || 'PDF Document'}</h3>
+        <button onclick="this.closest('.fixed').remove()" class="text-gray-600 dark:text-gray-300 hover:text-gray-900">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <iframe src="${pdfUrl}" class="flex-1 w-full" style="border: none;"></iframe>
+      <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-center gap-3">
+        <button onclick="downloadFile(window.currentPatientFiles[${fileIndex}].data, '${file.display_name || file.filename || 'document'}')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-semibold">
+          📥 Download PDF
+        </button>
+        <button onclick="this.closest('.fixed').remove()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+          Close
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+// Delete patient file
+async function deletePatientFile(patientId, fileIndex) {
+  if (!currentUser || !currentUser.permissions.includes('delete')) {
+    showNotification('You do not have permission to delete files', 'error');
+    return;
+  }
+  
+  if (!confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
+    return;
+  }
+  
+  try {
+    await securePatientDB.deletePatientFile(patientId, fileIndex);
+    showNotification('File deleted successfully', 'success');
+    
+    // Refresh the view
+    document.querySelector('.fixed')?.remove();
+    await viewPatientDetails(patientId);
+  } catch (error) {
+    console.error('Failed to delete file:', error);
+    showNotification('Failed to delete file', 'error');
+  }
+}
+
 // Render patient list with pagination
 function renderPatientList(patients) {
   // Store all patients for pagination
@@ -2036,25 +2190,97 @@ async function viewPatientDetails(patientId) {
         </div>
 
         ${files.length > 0 ? `
-          <h4 class="font-bold mt-2 mb-4 text-gray-900 dark:text-white">Medical Records & Files</h4>
-          <div class="grid grid-cols-1 gap-4">
-            ${files.map((file, index) => `
-              <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-between">
-                <div class="flex-1 pr-4">
-                  <h5 class="font-medium text-gray-900 dark:text-white">${sanitizeField(file.display_name || file.filename || `Record ${index+1}`, 'Medical Record')}</h5>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Type: ${getRecordTypeLabel(file.type || 'other')} •
-                    Size: ${(file.size && !isNaN(Number(file.size)) ? (Number(file.size) / 1024 / 1024).toFixed(2) : 'N/A')} MB •
-                    Uploaded: ${formatDate(file.uploaded_at, 'Unknown')}
+          <h4 class="font-bold mt-2 mb-4 text-gray-900 dark:text-white flex items-center gap-2">
+            📁 Medical Records & Files 
+            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(${files.length} file${files.length > 1 ? 's' : ''})</span>
+          </h4>
+          
+          <!-- File Gallery Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            ${files.map((file, index) => {
+              const isImage = file.type && (file.type.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.filename || ''));
+              const isPDF = file.type && (file.type === 'application/pdf' || /\.pdf$/i.test(file.filename || ''));
+              const category = getRecordTypeLabel(file.record_type || file.type || 'other');
+              const categoryColor = getCategoryColor(file.record_type || file.type || 'other');
+              
+              return `
+              <div class="relative group bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:border-purple-400 dark:hover:border-purple-500 transition-all overflow-hidden">
+                <!-- Thumbnail/Preview -->
+                <div class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center relative overflow-hidden">
+                  ${isImage ? `
+                    <div class="w-full h-full cursor-pointer" onclick="showImageGallery(${index})">
+                      <img id="thumb-${index}" src="" alt="Preview" class="w-full h-full object-cover" />
+                      <script>
+                        (function() {
+                          const file = window.currentPatientFiles[${index}];
+                          if (file && file.data) {
+                            const blob = file.data instanceof Blob ? file.data : new Blob([file.data], {type: file.type || 'image/jpeg'});
+                            document.getElementById('thumb-${index}').src = URL.createObjectURL(blob);
+                          }
+                        })();
+                      </script>
+                    </div>
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
+                      <span class="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">🔍 View Full</span>
+                    </div>
+                  ` : isPDF ? `
+                    <div class="text-red-500 text-6xl">📄</div>
+                    <div class="absolute bottom-2 left-2 right-2 text-center">
+                      <button onclick="viewPDFInline(${index})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                        View PDF
+                      </button>
+                    </div>
+                  ` : `
+                    <div class="text-gray-400 text-5xl">📎</div>
+                  `}
+                </div>
+                
+                <!-- File Info -->
+                <div class="p-3">
+                  <div class="flex items-start justify-between gap-2 mb-2">
+                    <h5 class="font-semibold text-sm text-gray-900 dark:text-white truncate flex-1" title="${sanitizeField(file.display_name || file.filename || `Record ${index+1}`, 'Medical Record')}">
+                      ${sanitizeField(file.display_name || file.filename || `Record ${index+1}`, 'Medical Record')}
+                    </h5>
+                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full ${categoryColor} whitespace-nowrap">
+                      ${category}
+                    </span>
+                  </div>
+                  
+                  <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                    ${(file.size && !isNaN(Number(file.size)) ? (Number(file.size) / 1024 / 1024).toFixed(2) : 'N/A')} MB • 
+                    ${formatDate(file.uploaded_at, 'Unknown')}
                   </p>
+                  
+                  ${file.description ? `
+                    <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-2 line-clamp-2">
+                      "${file.description}"
+                    </p>
+                  ` : ''}
+                  
+                  <!-- Action Buttons -->
+                  <div class="flex gap-1.5">
+                    <button onclick="downloadFile(window.currentPatientFiles[${index}].data, '${sanitizeField(file.display_name || file.filename || `file_${index+1}`)}')" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1.5 rounded text-xs font-semibold flex items-center justify-center gap-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                      Download
+                    </button>
+                    <button onclick="deletePatientFile('${patientId}', ${index})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1.5 rounded text-xs font-semibold" data-requires-delete="true">
+                      🗑️
+                    </button>
+                  </div>
                 </div>
-                <div class="flex-shrink-0">
-                  <button onclick="downloadFile(window.currentPatientFiles[${index}].data, '${sanitizeField(file.display_name || file.filename || `file_${index+1}`)}')" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600">Download</button>
-                </div>
+                
+                <!-- IPFS Badge -->
+                ${file.ipfs_cid ? `
+                  <div class="absolute top-2 left-2 bg-green-500 text-white px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1">
+                    <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                    IPFS
+                  </div>
+                ` : ''}
               </div>
-            `).join('')}
+              `;
+            }).join('')}
           </div>
-        ` : '<p class="text-gray-500 dark:text-gray-400 mt-4">No medical records uploaded yet.</p>'}
+        ` : '<p class="text-gray-500 dark:text-gray-400 mt-4">📭 No medical records uploaded yet.</p>'}
 
         <div class="mt-6 flex justify-end">
           <button onclick="this.closest('.fixed').remove()" class="bg-gray-500 text-white px-4 py-2 rounded">Close</button>
@@ -2765,10 +2991,24 @@ function createImportTextMegaPanel() {
   }, 10);
 }
 
-// Export patient data
-document.getElementById('exportBtn').addEventListener('click', async () => {
+// ========== EXPORT & REPORT GENERATION ==========
+
+// Toggle export dropdown
+document.getElementById('exportDropdownBtn')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const dropdown = document.getElementById('exportDropdown');
+  dropdown?.classList.toggle('hidden');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', () => {
+  document.getElementById('exportDropdown')?.classList.add('hidden');
+});
+
+// Export patient data as JSON
+document.getElementById('exportJSONBtn')?.addEventListener('click', async () => {
   try {
-    showNotification('Exporting data...', 'info');
+    showNotification('Exporting JSON...', 'info');
 
     const patients = await securePatientDB.getAllPatients();
     const exportData = {
@@ -2801,14 +3041,133 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showNotification('Data exported successfully!', 'success');
+    showNotification('JSON exported successfully!', 'success');
   } catch (error) {
     console.error('Export failed:', error);
-    showNotification('Failed to export data', 'error');
+    showNotification('Failed to export JSON', 'error');
   }
 });
 
-// Import patient data
+// Export as Excel
+document.getElementById('exportExcelBtn')?.addEventListener('click', async () => {
+  try {
+    showNotification('Exporting Excel...', 'info');
+    
+    const patients = await securePatientDB.getAllPatients();
+    const data = patients.map(p => ({
+      'Patient ID': p._id.split('_')[1] || p._id,
+      'Name': sanitizeField(p.metadata?.name || p.name, ''),
+      'Age': sanitizeField(p.metadata?.age || p.age, ''),
+      'Gender': sanitizeField(p.metadata?.gender || p.gender, ''),
+      'Diagnosis': sanitizeField(p.metadata?.diagnosis || p.diagnosis, ''),
+      'Prescription': sanitizeField(p.metadata?.prescription || p.prescription, ''),
+      'Room': sanitizeField(p.metadata?.room || p.room, ''),
+      'Allergies': sanitizeField(p.metadata?.allergies || p.allergies, ''),
+      'Emergency Contact': sanitizeField(p.metadata?.emergency_contact || p.emergency_contact, ''),
+      'Date Added': formatDate(p.metadata?.created_at, ''),
+      'IPFS CID': p.ipfs_cid || '',
+      'Blockchain': p.blockchain_hash ? 'Verified' : 'Pending'
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Patients');
+    
+    // Add styling and column widths
+    const wscols = [
+      {wch: 15}, {wch: 20}, {wch: 8}, {wch: 10}, {wch: 20},
+      {wch: 15}, {wch: 10}, {wch: 20}, {wch: 20}, {wch: 12},
+      {wch: 20}, {wch: 12}
+    ];
+    ws['!cols'] = wscols;
+    
+    XLSX.writeFile(wb, `HealthChain_Patients_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showNotification('Excel exported successfully!', 'success');
+  } catch (error) {
+    console.error('Excel export failed:', error);
+    showNotification('Failed to export Excel', 'error');
+  }
+});
+
+// Export as PDF
+document.getElementById('exportPDFBtn')?.addEventListener('click', async () => {
+  try {
+    showNotification('Generating PDF...', 'info');
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+    
+    const patients = await securePatientDB.getAllPatients();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(107, 70, 193); // Purple
+    doc.text('🏥 HealthChain Pro - Patient Records', 20, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 28);
+    doc.text(`Total Patients: ${patients.length}`, 20, 34);
+    
+    // Table
+    let y = 45;
+    doc.setFontSize(9);
+    
+    // Table header
+    doc.setFillColor(107, 70, 193);
+    doc.setTextColor(255, 255, 255);
+    doc.rect(15, y, 260, 8, 'F');
+    doc.text('Name', 18, y + 5);
+    doc.text('Age', 70, y + 5);
+    doc.text('Gender', 90, y + 5);
+    doc.text('Diagnosis', 120, y + 5);
+    doc.text('Room', 180, y + 5);
+    doc.text('Date', 210, y + 5);
+    
+    y += 10;
+    doc.setTextColor(0, 0, 0);
+    
+    // Table rows
+    patients.forEach((p, i) => {
+      if (y > 180) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      const bgColor = i % 2 === 0 ? [245, 245, 245] : [255, 255, 255];
+      doc.setFillColor(...bgColor);
+      doc.rect(15, y - 4, 260, 7, 'F');
+      
+      doc.text(sanitizeField(p.metadata?.name || p.name, 'N/A').substring(0, 20), 18, y);
+      doc.text(String(sanitizeField(p.metadata?.age || p.age, 'N/A')), 70, y);
+      doc.text(sanitizeField(p.metadata?.gender || p.gender, 'N/A'), 90, y);
+      doc.text(sanitizeField(p.metadata?.diagnosis || p.diagnosis, 'N/A').substring(0, 25), 120, y);
+      doc.text(sanitizeField(p.metadata?.room || p.room, 'N/A'), 180, y);
+      doc.text(formatDate(p.metadata?.created_at, 'N/A'), 210, y);
+      
+      y += 7;
+    });
+    
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Page ${i} of ${pageCount} | HealthChain Pro - Decentralized Healthcare System`, 15, 200);
+    }
+    
+    doc.save(`HealthChain_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+    showNotification('PDF generated successfully!', 'success');
+  } catch (error) {
+    console.error('PDF generation failed:', error);
+    showNotification('Failed to generate PDF. Make sure jsPDF library is loaded.', 'error');
+  }
+});
+
+// ========== END EXPORT & REPORT GENERATION ==========
+
+// Import patient data (keep existing)
 document.getElementById('importBtn').addEventListener('click', () => {
   // Accept JSON, CSV, XLSX imports
   const input = document.createElement('input');
