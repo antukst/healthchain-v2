@@ -868,45 +868,50 @@ function renderPatientList(patients) {
   // Synchronous loop to ensure checkboxes are rendered immediately
   patients.forEach((patient) => {
     const row = document.createElement('tr');
-    row.className = "border-b border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer";
+    row.className = "border-b border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700";
     row.dataset.patientId = patient._id; // Store patient ID for selection
 
     const blockchainIcon = patient.blockchain_hash ?
-      '<span class="text-green-500" title="Blockchain verified">🔒</span>' :
-      '<span class="text-gray-400" title="Not blockchain verified">⭕</span>';
+      '<span class="text-green-500 text-xs sm:text-base" title="Blockchain verified">🔒</span>' :
+      '<span class="text-gray-400 text-xs sm:text-base" title="Not blockchain verified">⭕</span>';
 
     // Initially show 0 files, then update asynchronously
-    let recordsIcon = '<span class="text-gray-300" title="Loading...">📄</span>';
+    let recordsIcon = '<span class="text-gray-300 text-xs sm:text-base" title="Loading...">📄</span>';
 
     // Compute permissions safely (currentUser may be null during initial load)
     const perms = currentUser && Array.isArray(currentUser.permissions) ? currentUser.permissions : [];
   const checkboxDisabled = perms.includes('delete') ? '' : 'disabled';
 
     // Build action buttons based on permissions
-    let actionButtons = `<button onclick="viewPatientDetails('${patient._id}')" class="inline-flex items-center bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600">View</button>`;
+    let actionButtons = `<button onclick="viewPatientDetails('${patient._id}')" class="inline-flex items-center bg-blue-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-blue-600 whitespace-nowrap">View</button>`;
     if (perms.includes('write')) {
-      actionButtons += ` <button onclick="editPatient('${patient._id}')" class="inline-flex items-center bg-yellow-500 text-white px-2 py-1 rounded text-sm hover:bg-yellow-600">Edit</button>`;
-      actionButtons += ` <button onclick="sharePatient('${patient._id}')" class="inline-flex items-center bg-purple-500 text-white px-2 py-1 rounded text-sm hover:bg-purple-600">Share</button>`;
+      actionButtons += ` <button onclick="editPatient('${patient._id}')" class="inline-flex items-center bg-yellow-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-yellow-600 whitespace-nowrap">Edit</button>`;
+      actionButtons += ` <button onclick="sharePatient('${patient._id}')" class="inline-flex items-center bg-purple-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-purple-600 whitespace-nowrap hidden sm:inline-flex">Share</button>`;
     }
     if (perms.includes('delete')) {
-      actionButtons += ` <button onclick="deletePatient('${patient._id}')" class="inline-flex items-center bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600 delete-btn">Delete</button>`;
+      actionButtons += ` <button onclick="deletePatient('${patient._id}')" class="inline-flex items-center bg-red-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-red-600 delete-btn whitespace-nowrap hidden sm:inline-flex">Delete</button>`;
     }
 
     const shortId = (patient._id && patient._id.includes('_')) ? patient._id.split('_')[1] : patient._id;
+    const truncatedId = shortId.length > 8 ? shortId.substring(0, 8) + '...' : shortId;
 
     row.innerHTML = `
-      <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-center">
         <input type="checkbox" class="patient-checkbox w-4 h-4 cursor-pointer" value="${patient._id}" ${checkboxDisabled}>
       </td>
-      <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-white">${shortId} ${blockchainIcon} <span class="records-icon">${recordsIcon}</span></td>
-      <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-white">${sanitizeField(patient.metadata?.name, 'N/A')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-white">${sanitizeField(patient.metadata?.age, 'N/A')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-white">${sanitizeField(patient.metadata?.gender, 'N/A')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-white">${sanitizeField(patient.metadata?.diagnosis, 'Not specified')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-white">${sanitizeField(patient.metadata?.prescription, 'N/A')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-white">${formatDate(patient.metadata?.created_at, 'N/A')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-white">
-        <div class="flex items-center space-x-2">
+      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm">
+        <span class="hidden sm:inline">${shortId}</span>
+        <span class="sm:hidden">${truncatedId}</span>
+        ${blockchainIcon} <span class="records-icon">${recordsIcon}</span>
+      </td>
+      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm">${sanitizeField(patient.metadata?.name, 'N/A')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm">${sanitizeField(patient.metadata?.age, 'N/A')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm hidden md:table-cell">${sanitizeField(patient.metadata?.gender, 'N/A')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm">${sanitizeField(patient.metadata?.diagnosis, 'Not specified')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm hidden lg:table-cell">${sanitizeField(patient.metadata?.prescription, 'N/A')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white text-xs sm:text-sm hidden xl:table-cell">${formatDate(patient.metadata?.created_at, 'N/A')}</td>
+      <td class="border border-gray-300 dark:border-gray-600 px-2 sm:px-4 py-2 text-gray-900 dark:text-white">
+        <div class="flex items-center gap-1 sm:gap-2 flex-wrap">
           ${actionButtons}
         </div>
       </td>
@@ -920,8 +925,8 @@ function renderPatientList(patients) {
       const recordsIconEl = row.querySelector('.records-icon');
       if (recordsIconEl) {
         recordsIconEl.innerHTML = fileCount > 0 ?
-          `<span class="text-blue-500" title="${fileCount} medical record${fileCount > 1 ? 's' : ''}">📄</span>` :
-          '<span class="text-gray-300" title="No medical records">📄</span>';
+          `<span class="text-blue-500 text-xs sm:text-base" title="${fileCount} medical record${fileCount > 1 ? 's' : ''}">📄</span>` :
+          '<span class="text-gray-300 text-xs sm:text-base" title="No medical records">📄</span>';
       }
     }).catch(error => {
       console.warn('Could not get file count for patient:', patient._id);

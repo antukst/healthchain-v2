@@ -1,8 +1,73 @@
 // db.js - Enhanced database layer with encryption and IPFS
 const db = new PouchDB('healthchain-pro');
 
-// Replace with your CouchDB remote URL
-const remoteCouch = 'http://127.0.0.1:5984/healthchain-pro';
+// Remote CouchDB Configuration
+// OPTION 1: Use a free CouchDB service (e.g., IBM Cloudant, Couchbase Cloud)
+// OPTION 2: Self-hosted CouchDB (uncomment and configure your server URL)
+// OPTION 3: Local CouchDB (for development)
+const COUCHDB_CONFIG = {
+  // For production: Use a secure remote CouchDB server
+  // url: 'https://your-username:your-password@your-couchdb.cloudant.com/healthchain-pro',
+  
+  // For development: Use local CouchDB (install from https://couchdb.apache.org/)
+  url: 'http://admin:password@127.0.0.1:5984/healthchain-pro',
+  
+  // Sync options
+  syncEnabled: false, // Set to true when CouchDB is configured
+  syncOptions: {
+    live: true,  // Continuous sync
+    retry: true, // Retry on failure
+    heartbeat: 10000, // Keep connection alive
+    timeout: 30000
+  }
+};
+
+// Initialize remote sync
+let syncHandler = null;
+
+function setupCouchDBSync() {
+  if (!COUCHDB_CONFIG.syncEnabled) {
+    console.log('📝 CouchDB sync disabled. Enable in db.js to sync with remote database.');
+    return null;
+  }
+
+  try {
+    console.log('🔄 Setting up CouchDB sync...');
+    
+    syncHandler = db.sync(COUCHDB_CONFIG.url, {
+      ...COUCHDB_CONFIG.syncOptions,
+      filter: function(doc) {
+        // Only sync patient and medical records
+        return doc._id.startsWith('patient_') || doc._id.startsWith('file_');
+      }
+    })
+    .on('change', function(info) {
+      console.log('✅ CouchDB sync change:', info);
+    })
+    .on('paused', function(err) {
+      console.log('⏸️ CouchDB sync paused');
+    })
+    .on('active', function() {
+      console.log('▶️ CouchDB sync active');
+    })
+    .on('denied', function(err) {
+      console.error('❌ CouchDB sync denied:', err);
+    })
+    .on('error', function(err) {
+      console.error('❌ CouchDB sync error:', err);
+    })
+    .on('complete', function(info) {
+      console.log('✅ CouchDB sync complete:', info);
+    });
+
+    console.log('✅ CouchDB sync enabled - Data will sync when online');
+    return syncHandler;
+  } catch (error) {
+    console.warn('⚠️ CouchDB sync failed to initialize:', error.message);
+    console.log('💡 To enable sync: Install CouchDB and update COUCHDB_CONFIG in db.js');
+    return null;
+  }
+}
 
 // Global variables for encryption and IPFS
 let encryptionKey = null;
@@ -13,6 +78,9 @@ async function initializeSystem(masterPassword = 'default_password_2024') {
   try {
     // Initialize IPFS
     await ipfsManager.init();
+
+    // Setup CouchDB sync
+    setupCouchDBSync();
 
     // Try to retrieve existing encryption key
     encryptionKey = await encryptionManager.retrieveKey(masterPassword);
@@ -26,6 +94,7 @@ async function initializeSystem(masterPassword = 'default_password_2024') {
 
     isInitialized = true;
     console.log('✅ HealthChain system initialized successfully');
+    console.log('📊 Architecture: PouchDB (Local) → CouchDB (Remote) → IPFS (Distributed) → Pinata (Cloud) → Polygon (Blockchain)');
     return true;
   } catch (error) {
     console.error('❌ Failed to initialize system:', error);
