@@ -181,7 +181,13 @@ class IPFSManager {
   async forceReconnect() {
     console.log('🔄 Force reconnecting to Pinata...');
     this.isConnected = false;
-    return await this.init();
+    const success = await this.init();
+    if (success) {
+      console.log('✅ Force reconnect successful');
+    } else {
+      console.log('❌ Force reconnect failed');
+    }
+    return success;
   }
 
   // Test file pinning (for debugging)
