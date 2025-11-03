@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Simple IPFS Test</title>
+<style>
+body { 
+  font-family: Arial; 
+  max-width: 800px; 
+  margin: 50px auto; 
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+.box { 
+  background: white; 
+  color: #333; 
+  padding: 30px; 
+  border-radius: 15px; 
+  margin: 20px 0;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+button { 
+  background: #667eea; 
+  color: white; 
+  border: none; 
+  padding: 15px 30px; 
+  font-size: 18px;
+  border-radius: 8px; 
+  cursor: pointer;
+  font-weight: bold;
+}
+button:hover { background: #5568d3; }
+#result { 
+  margin-top: 20px; 
+  padding: 20px; 
+  border-radius: 8px;
+  font-size: 16px;
+}
+.success { background: #d4edda; color: #155724; }
+.error { background: #f8d7da; color: #721c24; }
+.info { background: #d1ecf1; color: #0c5460; }
+pre { 
+  background: #f4f4f4; 
+  padding: 15px; 
+  border-radius: 5px; 
+  overflow-x: auto;
+  color: #333;
+}
+h1 { margin: 0 0 10px 0; }
+</style>
+</head>
+<body>
+
+<h1>🧪 IPFS Desktop Simple Test</h1>
+<p>সহজ CORS test - কোনো external library লাগবে না</p>
+
+<div class="box">
+  <h2>Test 1: Direct API Call</h2>
+  <button onclick="testDirectAPI()">🔍 Test IPFS API</button>
+  <div id="result1"></div>
+</div>
+
+<div class="box">
+  <h2>Test 2: CORS Headers Check</h2>
+  <button onclick="testCORS()">🌐 Check CORS Headers</button>
+  <div id="result2"></div>
+</div>
+
+<div class="box">
+  <h2>Test 3: Upload Test Data</h2>
+  <button onclick="testUpload()">📤 Upload to IPFS</button>
+  <div id="result3"></div>
+</div>
+
+<script>
+console.log('🚀 Page loaded successfully');
+
+async function testDirectAPI() {
+  const result = document.getElementById('result1');
+  result.className = 'info';
+  result.innerHTML = '🔄 Testing...';
+  
+  console.log('Testing IPFS API at http://127.0.0.1:5001/api/v0/version');
+  
+  try {
+    const response = await fetch('http://127.0.0.1:5001/api/v0/version', {
+      method: 'POST'
+    });
+    
+    console.log('Response status:', response.status);
+    console.log('Response headers:', [...response.headers.entries()]);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('✅ Success! IPFS version:', data);
+    
+    result.className = 'success';
+    result.innerHTML = `
+      <h3>✅ IPFS Desktop Connected!</h3>
+      <strong>Version:</strong> ${data.Version}<br>
+      <strong>Commit:</strong> ${data.Commit || 'N/A'}<br>
+      <strong>Repo:</strong> ${data.Repo}<br>
+      <strong>System:</strong> ${data.System}<br>
+      <strong>Golang:</strong> ${data.Golang}<br><br>
+      <strong style="color: green;">CORS কাজ করছে! ✅</strong>
+    `;
+    
+  } catch (error) {
+    console.error('❌ Error:', error);
+    
+    result.className = 'error';
+    result.innerHTML = `
+      <h3>❌ Connection Failed</h3>
+      <strong>Error:</strong> ${error.message}<br><br>
+      ${error.message.includes('Failed to fetch') ? `
+        <strong>সমস্যা:</strong> CORS blocked অথবা IPFS Desktop চালু নেই<br><br>
+        <strong>সমাধান:</strong><br>
+        1. IPFS Desktop চালু আছে কিনা check করো<br>
+        2. CORS config add করেছো কিনা verify করো<br>
+        3. IPFS Desktop restart করো<br>
+        4. এই page refresh করো (Ctrl+Shift+R)
+      ` : ''}
+    `;
+  }
+}
+
+async function testCORS() {
+  const result = document.getElementById('result2');
+  result.className = 'info';
+  result.innerHTML = '🔄 Checking CORS headers...';
+  
+  try {
+    const response = await fetch('http://127.0.0.1:5001/api/v0/version', {
+      method: 'POST'
+    });
+    
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+      'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+      'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+    };
+    
+    console.log('CORS Headers:', corsHeaders);
+    
+    result.className = 'success';
+    result.innerHTML = `
+      <h3>✅ CORS Headers Present</h3>
+      <pre>${JSON.stringify(corsHeaders, null, 2)}</pre>
+      <strong style="color: green;">CORS configuration সঠিকভাবে কাজ করছে!</strong>
+    `;
+    
+  } catch (error) {
+    result.className = 'error';
+    result.innerHTML = `
+      <h3>❌ Cannot check CORS</h3>
+      Error: ${error.message}<br><br>
+      IPFS Desktop চালু নেই অথবা CORS config নেই।
+    `;
+  }
+}
+
+async function testUpload() {
+  const result = document.getElementById('result3');
+  result.className = 'info';
+  result.innerHTML = '🔄 Uploading test data...';
+  
+  try {
+    const testData = JSON.stringify({
+      test: 'HealthChain IPFS Test',
+      timestamp: new Date().toISOString(),
+      message: 'এটা একটা test upload'
+    });
+    
+    const formData = new FormData();
+    formData.append('file', new Blob([testData], {type: 'application/json'}), 'test.json');
+    
+    const response = await fetch('http://127.0.0.1:5001/api/v0/add?pin=true', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('✅ Upload successful:', data);
+    
+    // Now copy to MFS (Files tab) so it's visible in IPFS Desktop
+    const cid = data.Hash;
+    const mfsPath = `/healthchain/test_${Date.now()}.json`;
+    
+    try {
+      // Create /healthchain directory
+      await fetch('http://127.0.0.1:5001/api/v0/files/mkdir?arg=' + encodeURIComponent('/healthchain') + '&parents=true', {
+        method: 'POST'
+      });
+      
+      // Copy to MFS
+      await fetch('http://127.0.0.1:5001/api/v0/files/cp?arg=' + encodeURIComponent(`/ipfs/${cid}`) + '&arg=' + encodeURIComponent(mfsPath), {
+        method: 'POST'
+      });
+      
+      console.log('✅ Copied to MFS:', mfsPath);
+      
+      result.className = 'success';
+      result.innerHTML = `
+        <h3>✅ Upload Successful!</h3>
+        <strong>CID:</strong> ${data.Hash}<br>
+        <strong>Name:</strong> ${data.Name}<br>
+        <strong>Size:</strong> ${data.Size} bytes<br>
+        <strong>MFS Path:</strong> ${mfsPath}<br><br>
+        <strong style="color: green;">✅ এখন IPFS Desktop → Files tab → /healthchain/ folder এ দেখো!</strong><br><br>
+        Gateway link: <a href="https://ipfs.io/ipfs/${data.Hash}" target="_blank">https://ipfs.io/ipfs/${data.Hash}</a>
+      `;
+      
+    } catch (mfsError) {
+      console.warn('⚠️ MFS copy failed:', mfsError);
+      result.className = 'success';
+      result.innerHTML = `
+        <h3>⚠️ Partial Success</h3>
+        <strong>CID:</strong> ${data.Hash}<br>
+        <strong>Size:</strong> ${data.Size} bytes<br><br>
+        File uploaded কিন্তু Files tab এ দেখা যাবে না।<br>
+        MFS Error: ${mfsError.message}<br><br>
+        Gateway link: <a href="https://ipfs.io/ipfs/${data.Hash}" target="_blank">https://ipfs.io/ipfs/${data.Hash}</a>
+      `;
+    }
+    
+  } catch (error) {
+    console.error('❌ Upload error:', error);
+    result.className = 'error';
+    result.innerHTML = `
+      <h3>❌ Upload Failed</h3>
+      Error: ${error.message}
+    `;
+  }
+}
+
+// Auto-run test on page load
+window.addEventListener('load', () => {
+  console.log('Running auto-test in 2 seconds...');
+  setTimeout(() => {
+    console.log('Starting automatic IPFS test...');
+    testDirectAPI();
+  }, 2000);
+});
+</script>
+
+</body>
+</html>

@@ -2656,4 +2656,79 @@ window.forceCreateAdmin = function() {
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
+  
+  // Auto-run IPFS connection diagnostic after 3 seconds
+  setTimeout(async () => {
+    console.log('🔍 Running IPFS Desktop diagnostic test...');
+    await testIPFSConnection();
+  }, 3000);
 });
+
+// IPFS Connection Diagnostic Test
+async function testIPFSConnection() {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('🧪 IPFS Desktop Connection Test');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  
+  try {
+    const response = await fetch('http://127.0.0.1:5001/api/v0/version', {
+      method: 'POST',
+      signal: AbortSignal.timeout(5000)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    console.log('✅ IPFS Desktop CONNECTED!');
+    console.log('📌 Version:', data.Version);
+    console.log('📌 Commit:', data.Commit || 'N/A');
+    console.log('📌 System:', data.System);
+    console.log('📌 Golang:', data.Golang);
+    
+    // Check CORS headers
+    const corsOrigin = response.headers.get('Access-Control-Allow-Origin');
+    if (corsOrigin) {
+      console.log('✅ CORS Headers Present:', corsOrigin);
+    } else {
+      console.warn('⚠️ CORS headers missing (but request succeeded)');
+    }
+    
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🎉 IPFS Desktop সঠিকভাবে configured!');
+    console.log('📂 Files এখন IPFS Desktop এ দেখা যাবে');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
+    return true;
+    
+  } catch (error) {
+    console.log('❌ IPFS Desktop NOT Connected');
+    console.error('Error:', error.message);
+    
+    if (error.message.includes('Failed to fetch')) {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🔧 TROUBLESHOOTING STEPS:');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('1. Check IPFS Desktop is running (system tray)');
+      console.log('2. Add CORS config to IPFS Desktop:');
+      console.log('   Settings → IPFS Config → Add:');
+      console.log(`   {
+  "API": {
+    "HTTPHeaders": {
+      "Access-Control-Allow-Origin": ["*"],
+      "Access-Control-Allow-Methods": ["PUT", "POST", "GET"],
+      "Access-Control-Allow-Headers": ["Content-Type"]
+    }
+  }
+}`);
+      console.log('3. Restart IPFS Desktop (Quit + Relaunch)');
+      console.log('4. Refresh this page (Ctrl+Shift+R)');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
+    
+    return false;
+  }
+}
+
