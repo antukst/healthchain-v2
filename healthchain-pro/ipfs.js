@@ -271,7 +271,15 @@ class IPFSManager {
   }
 
   async _mirrorToMfs(cid, options = {}) {
+    console.log('🔄 _mirrorToMfs called with:', { cid, options });
+    
     if (!this.isConnected || !cid || !this.ipfs?.files || typeof this.ipfs.files.cp !== 'function') {
+      console.warn('⚠️ Cannot mirror to MFS:', {
+        isConnected: this.isConnected,
+        hasCid: !!cid,
+        hasFiles: !!this.ipfs?.files,
+        hasCpFunc: typeof this.ipfs?.files?.cp === 'function'
+      });
       return null;
     }
 
@@ -281,24 +289,36 @@ class IPFSManager {
     const targetPath = options.path || `${normalizedFolder}/${filename}`;
     const parentPath = targetPath.includes('/') ? targetPath.substring(0, targetPath.lastIndexOf('/')) || '/' : '/';
 
+    console.log('📂 MFS target:', { folder, filename, targetPath, parentPath });
+
     try {
       // Create directory if doesn't exist
+      console.log('📁 Creating directory:', parentPath);
       await this._ensureMfsDir(parentPath);
       
       // Remove existing file if present
       try {
         await this.ipfs.files.rm(targetPath, { recursive: true });
+        console.log('🗑️ Removed existing file:', targetPath);
       } catch (rmErr) {
         // File doesn't exist, that's fine
+        console.log('ℹ️ No existing file to remove');
       }
 
       // Copy CID to MFS (this makes it visible in IPFS Desktop Files tab)
-      await this.ipfs.files.cp(`/ipfs/${cid}`, targetPath);
-      console.log(`📂 MFS: ${targetPath}`);
+      const sourcePath = `/ipfs/${cid}`;
+      console.log('📋 Copying:', sourcePath, '→', targetPath);
+      await this.ipfs.files.cp(sourcePath, targetPath);
+      console.log(`✅ MFS copy successful: ${targetPath}`);
       
       return targetPath;
     } catch (err) {
-      console.warn('⚠️ Failed to mirror to MFS:', err);
+      console.error('❌ Failed to mirror to MFS:', err);
+      console.error('Error details:', {
+        message: err.message,
+        code: err.code,
+        stack: err.stack
+      });
       return null;
     }
   }
