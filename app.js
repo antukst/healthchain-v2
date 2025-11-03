@@ -421,19 +421,19 @@ function showAuthModal(signUp = false) {
     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full">
       <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">${signUp ? 'Sign Up' : 'Sign In'}</h3>
       <form id="authForm" class="space-y-3">
-        <input id="authUsername" placeholder="Username (email)" class="w-full p-2 border rounded" required />
-        <input id="authPassword" type="password" placeholder="Password" class="w-full p-2 border rounded" required />
+        <input id="authUsername" placeholder="Username (email)" class="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded" required />
+        <input id="authPassword" type="password" placeholder="Password" class="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded" required />
         ${signUp ? `
-          <select id="authRole" class="w-full p-2 border rounded">
+          <select id="authRole" class="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded">
             <option value="patient">Patient</option>
             <option value="doctor">Doctor</option>
             <option value="admin">Admin</option>
           </select>
-          <input id="authPatientId" placeholder="(optional) Link Patient ID (patients only)" class="w-full p-2 border rounded" />
+          <input id="authPatientId" placeholder="(optional) Link Patient ID (patients only)" class="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded" />
         ` : ''}
         <div class="flex justify-between items-center">
-          <button id="authSubmit" class="bg-blue-500 text-white px-4 py-2 rounded">${signUp ? 'Register' : 'Sign In'}</button>
-          <button id="authToggle" type="button" class="text-sm text-blue-600 underline">${signUp ? 'Have an account? Sign In' : 'Create an account'}</button>
+          <button id="authSubmit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">${signUp ? 'Register' : 'Sign In'}</button>
+          <button id="authToggle" type="button" class="text-sm text-blue-600 dark:text-blue-400 underline">${signUp ? 'Have an account? Sign In' : 'Create an account'}</button>
         </div>
       </form>
     </div>
