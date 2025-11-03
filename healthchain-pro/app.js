@@ -762,48 +762,28 @@ async function loadDashboard() {
 }
 
 // Update statistics
-function updateStats(patients) {
-  const totalPatientsEl = document.getElementById('totalPatients');
-  const avgAgeEl = document.getElementById('avgAge');
-  const criticalCasesEl = document.getElementById('criticalCases');
-  if (!totalPatientsEl || !avgAgeEl || !criticalCasesEl) {
-    return;
-  }
+        function mapRowToPatient(r) {
+          const source = r && typeof r === 'object' ? r : {};
 
-  const totalPatients = patients.length;
-  const avgAge = totalPatients > 0 ?
-    patients.reduce((sum, p) => {
-      const ageValue = Number(p.metadata && p.metadata.age);
-      return sum + (Number.isFinite(ageValue) ? ageValue : 0);
-    }, 0) / totalPatients : 0;
-  const criticalCases = patients.filter(p => {
-    const diagnosis = (p.metadata && p.metadata.diagnosis) ? p.metadata.diagnosis.toString().toLowerCase() : '';
-    return diagnosis.includes('critical');
-  }).length;
+          // Build normalization map so "Primary Condition", "primary_condition" etc resolve the same
+          const normalizedKeyMap = {};
+          Object.keys(source).forEach(originalKey => {
+            const lower = originalKey.toLowerCase();
+            const stripped = lower.replace(/[_\s-]/g, '');
+            normalizedKeyMap[lower] = originalKey;
+            normalizedKeyMap[stripped] = originalKey;
+          });
 
-  // Gender distribution
-  const maleCount = patients.filter(p => {
-    const gender = (p.metadata && p.metadata.gender) ? p.metadata.gender.toString().toLowerCase() : '';
-    return gender === 'male';
-  }).length;
-  const femaleCount = patients.filter(p => {
-    const gender = (p.metadata && p.metadata.gender) ? p.metadata.gender.toString().toLowerCase() : '';
-    return gender === 'female';
-  }).length;
-  const malePercentage = totalPatients > 0 ? (maleCount / totalPatients) * 100 : 0;
-  const femalePercentage = totalPatients > 0 ? (femaleCount / totalPatients) * 100 : 0;
-
-  // Total medical records (simplified - would need to count actual files)
-  let totalRecords = 0;
-  try {
-    // This is a simplified count - in a real app you'd count actual files
-    totalRecords = patients.reduce((sum, patient) => {
-      // For now, just estimate based on patients
-      return sum + Math.floor(Math.random() * 3) + 1; // Random 1-3 records per patient
-    }, 0);
-  } catch (error) {
-    console.warn('Could not count medical records:', error);
-  }
+          const findKey = (...possibleNames) => {
+            for (const name of possibleNames) {
+              if (!name) continue;
+              const lower = name.toLowerCase();
+              const stripped = lower.replace(/[_\s-]/g, '');
+              if (normalizedKeyMap[lower]) return normalizedKeyMap[lower];
+              if (normalizedKeyMap[stripped]) return normalizedKeyMap[stripped];
+            }
+            return null;
+          };
 
   // Update primary stats
   totalPatientsEl.textContent = totalPatients;
@@ -2193,42 +2173,49 @@ function createImportTextMegaPanel() {
         
         // Use the same mapRowToPatient function
         function mapRowToPatient(r) {
-          // Flexible key matching
+          const source = r && typeof r === 'object' ? r : {};
+
+          // Normalized lookup map for flexible header matching
+          const normalizedKeyMap = {};
+          Object.keys(source).forEach(originalKey => {
+            const lower = originalKey.toLowerCase();
+            const stripped = lower.replace(/[_\s-]/g, '');
+            normalizedKeyMap[lower] = originalKey;
+            normalizedKeyMap[stripped] = originalKey;
+          });
+
           const findKey = (...possibleNames) => {
             for (const name of possibleNames) {
-              // Try exact match first (case-insensitive)
-              const exactMatch = Object.keys(r).find(k => 
-                k.toLowerCase().replace(/[_\s-]/g, '') === name.toLowerCase().replace(/[_\s-]/g, '')
-              );
-              if (exactMatch) return exactMatch;
-              
-              // Try partial match
-              const partialMatch = Object.keys(r).find(k => 
-                k.toLowerCase().includes(name.toLowerCase())
-              );
-              if (partialMatch) return partialMatch;
+              if (!name) continue;
+              const lower = name.toLowerCase();
+              const stripped = lower.replace(/[_\s-]/g, '');
+              if (normalizedKeyMap[lower]) return normalizedKeyMap[lower];
+              if (normalizedKeyMap[stripped]) return normalizedKeyMap[stripped];
             }
             return null;
           };
-          
+
           const get = (...possibleNames) => {
             const key = findKey(...possibleNames);
-            return key ? r[key] : '';
+            if (!key) return '';
+            const value = source[key];
+            return typeof value === 'string' ? value.trim() : value;
           };
 
           const patientData = {
-            name: get('name', 'patientname', 'fullname', 'patient_name', 'full_name') || '',
-            age: parseInt(get('age')) || '',
-            gender: get('gender', 'sex') || '',
-            diagnosis: get('diagnosis', 'disease') || '',
-            prescription: get('prescription', 'prescriptionid', 'prescription_id') || '',
-            room: get('room', 'roomnumber', 'room_number') || '',
-            medical_history: get('medicalhistory', 'medical_history', 'history') || '',
-            allergies: get('allergies', 'allergy') || '',
-            emergency_contact: get('emergencycontact', 'emergency_contact', 'contact', 'phone') || '',
+            name: get('name', 'patientname', 'fullname', 'patient_name', 'full_name', 'Name') || '',
+            age: parseInt(get('age', 'Age')) || '',
+            gender: get('gender', 'sex', 'Gender') || '',
+            diagnosis: get('diagnosis', 'disease', 'primarycondition', 'primary_condition', 'primary', 'condition', 'Primary Condition', 'PrimaryCondition') || '',
+            prescription: get('prescription', 'prescriptionid', 'prescription_id', 'rx', 'rxid', 'Prescription') || '',
+            room: get('room', 'roomnumber', 'room_number', 'Room Number', 'Room', 'RoomNumber') || '',
+            medical_history: get('medicalhistory', 'medical_history', 'history', 'comorbidities', 'comorbidity', 'Comorbidities', 'Medical History') || '',
+            allergies: get('allergies', 'allergy', 'Allergies') || '',
+            emergency_contact: get('emergencycontact', 'emergency_contact', 'contact', 'phone', 'Phone', 'Emergency Contact') || '',
             created_by: currentUser ? currentUser.id : 'import',
-            created_at: new Date().toISOString()
+            created_at: get('created_at', 'createdat', 'created') || new Date().toISOString()
           };
+
           return patientData;
         }
         
@@ -2412,50 +2399,45 @@ document.getElementById('importBtn').addEventListener('click', () => {
 
       // Map common column names to patient fields with flexible matching
       function mapRowToPatient(r) {
-        // Check if data is nested inside metadata object
-        const data = r.metadata || r;
-        
-        console.log('Raw row data:', r); // Debug: show raw data
-        console.log('Using data object:', data); // Debug: show what we're mapping from
-        console.log('Available keys:', Object.keys(data)); // Debug: show all keys
-        
-        // Flexible key matching - supports multiple naming conventions
+        const source = (r && typeof r === 'object') ? (r.metadata && typeof r.metadata === 'object' ? r.metadata : r) : {};
+
+        console.log('Raw row data:', r);
+        console.log('Using data object:', source);
+
+        // Build a normalized lookup so spaces/underscores/dashes are ignored
+        const normalizedKeyMap = {};
+        Object.keys(source).forEach(originalKey => {
+          const lower = originalKey.toLowerCase();
+          const stripped = lower.replace(/[_\s-]/g, '');
+          normalizedKeyMap[lower] = originalKey;
+          normalizedKeyMap[stripped] = originalKey;
+        });
+
+        console.log('Available keys:', Object.keys(source));
+
         const findKey = (...possibleNames) => {
           for (const name of possibleNames) {
-            // Try exact match with case-insensitive comparison (preserving spaces)
-            const exactMatchWithSpaces = Object.keys(data).find(k => 
-              k.toLowerCase() === name.toLowerCase()
-            );
-            if (exactMatchWithSpaces) {
-              console.log(`Found exact match for "${name}": key="${exactMatchWithSpaces}", value="${data[exactMatchWithSpaces]}"`);
-              return exactMatchWithSpaces;
+            if (!name) continue;
+            const lower = name.toLowerCase();
+            const stripped = lower.replace(/[_\s-]/g, '');
+            if (normalizedKeyMap[lower]) {
+              console.log(`Match for "${name}": using key "${normalizedKeyMap[lower]}"`);
+              return normalizedKeyMap[lower];
             }
-            
-            // Try exact match without spaces/underscores/hyphens
-            const exactMatch = Object.keys(data).find(k => 
-              k.toLowerCase().replace(/[_\s-]/g, '') === name.toLowerCase().replace(/[_\s-]/g, '')
-            );
-            if (exactMatch) {
-              console.log(`Found normalized match for "${name}": key="${exactMatch}", value="${data[exactMatch]}"`);
-              return exactMatch;
-            }
-            
-            // Try partial match
-            const partialMatch = Object.keys(data).find(k => 
-              k.toLowerCase().includes(name.toLowerCase())
-            );
-            if (partialMatch) {
-              console.log(`Found partial match for "${name}": key="${partialMatch}", value="${data[partialMatch]}"`);
-              return partialMatch;
+            if (normalizedKeyMap[stripped]) {
+              console.log(`Normalized match for "${name}": using key "${normalizedKeyMap[stripped]}"`);
+              return normalizedKeyMap[stripped];
             }
           }
           console.warn(`No match found for any of: ${possibleNames.join(', ')}`);
           return null;
         };
-        
+
         const get = (...possibleNames) => {
           const key = findKey(...possibleNames);
-          return key ? data[key] : '';
+          if (!key) return '';
+          const value = source[key];
+          return typeof value === 'string' ? value.trim() : value;
         };
 
         const patientData = {
@@ -2471,8 +2453,8 @@ document.getElementById('importBtn').addEventListener('click', () => {
           created_by: currentUser ? currentUser.id : 'import',
           created_at: get('created_at', 'createdat', 'created') || new Date().toISOString()
         };
-        
-        console.log('Final mapped patient:', patientData); // Debug: show final result
+
+        console.log('Final mapped patient:', patientData);
         return patientData;
       }
 
