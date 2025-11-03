@@ -7,6 +7,12 @@ let currentSessionStarted = null;
 let isSystemInitialized = false;
 let patientSelectOptions = [];
 
+// Pagination state
+let currentPage = 1;
+let itemsPerPage = 10;
+let allPatients = [];
+let filteredPatients = [];
+
 // Small helper to sanitize fields coming from legacy data
 function sanitizeField(value, fallback = 'N/A') {
   if (value === undefined || value === null) return fallback;
@@ -747,6 +753,10 @@ async function loadDashboard() {
     // Update stats
     updateStats(visiblePatients);
 
+    // Store patients for pagination and reset to first page
+    currentPage = 1;
+    allPatients = visiblePatients;
+    
     // Render patient list
     renderPatientList(visiblePatients);
 
@@ -860,13 +870,26 @@ function updateSystemHealthIndicators() {
   setStatusDot(encryptionHealth, isSystemInitialized ? 'ok' : 'error');
 }
 
-// Render patient list
+// Render patient list with pagination
 function renderPatientList(patients) {
+  // Store all patients for pagination
+  filteredPatients = patients;
+  
+  // Calculate pagination
+  const totalPatients = filteredPatients.length;
+  const totalPages = Math.ceil(totalPatients / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalPatients);
+  const patientsToShow = filteredPatients.slice(startIndex, endIndex);
+  
+  // Update pagination info
+  updatePaginationControls(totalPatients, startIndex, endIndex, totalPages);
+  
   const patientList = document.getElementById('patientList');
   patientList.innerHTML = '';
 
-  // Synchronous loop to ensure checkboxes are rendered immediately
-  patients.forEach((patient) => {
+  // Render only current page patients
+  patientsToShow.forEach((patient) => {
     const row = document.createElement('tr');
     row.className = "border-b border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700";
     row.dataset.patientId = patient._id; // Store patient ID for selection
@@ -935,6 +958,45 @@ function renderPatientList(patients) {
       console.warn('Could not get file count for patient:', patient._id);
     });
   });
+}
+
+// Update pagination controls
+function updatePaginationControls(total, start, end, totalPages) {
+  const paginationStart = document.getElementById('paginationStart');
+  const paginationEnd = document.getElementById('paginationEnd');
+  const paginationTotal = document.getElementById('paginationTotal');
+  const paginationInfo = document.getElementById('paginationInfo');
+  const paginationPrev = document.getElementById('paginationPrev');
+  const paginationNext = document.getElementById('paginationNext');
+  
+  if (paginationStart) paginationStart.textContent = total > 0 ? start + 1 : 0;
+  if (paginationEnd) paginationEnd.textContent = end;
+  if (paginationTotal) paginationTotal.textContent = total;
+  if (paginationInfo) paginationInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+  
+  if (paginationPrev) {
+    paginationPrev.disabled = currentPage <= 1;
+  }
+  
+  if (paginationNext) {
+    paginationNext.disabled = currentPage >= totalPages;
+  }
+}
+
+// Go to specific page
+function goToPage(page) {
+  const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
+  if (page < 1) page = 1;
+  if (page > totalPages) page = totalPages;
+  currentPage = page;
+  renderPatientList(filteredPatients);
+}
+
+// Change items per page
+function changeItemsPerPage(newItemsPerPage) {
+  itemsPerPage = parseInt(newItemsPerPage);
+  currentPage = 1; // Reset to first page
+  renderPatientList(filteredPatients);
 }
 
 // Handle patient form submission
@@ -1541,6 +1603,9 @@ document.getElementById('searchInput').addEventListener('input', async (e) => {
       patients = await securePatientDB.getAllPatients();
     }
 
+    // Reset to first page when searching
+    currentPage = 1;
+    allPatients = patients;
     renderPatientList(patients);
   } catch (error) {
     console.error('Search failed:', error);
@@ -2015,6 +2080,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const profileOverlay = document.getElementById('profileOverlay');
   const closeProfilePanelBtn = document.getElementById('closeProfilePanel');
   const profileSignOutBtn = document.getElementById('profileSignOut');
+  
+  // Pagination controls
+  const paginationPrev = document.getElementById('paginationPrev');
+  const paginationNext = document.getElementById('paginationNext');
+  const itemsPerPageSelect = document.getElementById('itemsPerPage');
+  
+  if (paginationPrev) {
+    paginationPrev.addEventListener('click', () => {
+      if (currentPage > 1) {
+        goToPage(currentPage - 1);
+      }
+    });
+  }
+  
+  if (paginationNext) {
+    paginationNext.addEventListener('click', () => {
+      const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        goToPage(currentPage + 1);
+      }
+    });
+  }
+  
+  if (itemsPerPageSelect) {
+    itemsPerPageSelect.addEventListener('change', (e) => {
+      changeItemsPerPage(e.target.value);
+    });
+  }
   
   if (authBtn) authBtn.addEventListener('click', () => showAuthModal(false));
   if (logoutBtn) logoutBtn.addEventListener('click', () => logoutUser());
