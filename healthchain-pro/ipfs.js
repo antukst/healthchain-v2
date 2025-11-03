@@ -283,13 +283,24 @@ class IPFSManager {
       return null;
     }
 
-    const folder = options.folder || '/healthchain/data';
-    const normalizedFolder = folder.startsWith('/') ? folder : `/${folder}`;
-    const filename = options.filename || cid;
-    const targetPath = options.path || `${normalizedFolder}/${filename}`;
-    const parentPath = targetPath.includes('/') ? targetPath.substring(0, targetPath.lastIndexOf('/')) || '/' : '/';
+    // Handle both 'path' (full path) and 'folder'+'filename' options
+    let targetPath;
+    let parentPath;
+    
+    if (options.path) {
+      // Full path provided
+      targetPath = options.path.startsWith('/') ? options.path : `/${options.path}`;
+      parentPath = targetPath.includes('/') ? targetPath.substring(0, targetPath.lastIndexOf('/')) || '/' : '/';
+    } else {
+      // Build from folder + filename
+      const folder = options.folder || '/healthchain/data';
+      const normalizedFolder = folder.startsWith('/') ? folder : `/${folder}`;
+      const filename = options.filename || `file_${Date.now()}.json`;
+      targetPath = `${normalizedFolder}/${filename}`;
+      parentPath = normalizedFolder;
+    }
 
-    console.log('📂 MFS target:', { folder, filename, targetPath, parentPath });
+    console.log('📂 MFS target:', { targetPath, parentPath, options });
 
     try {
       // Create directory if doesn't exist
