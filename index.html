@@ -42,8 +42,30 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-500 overflow-x-hidden">
 
 <!-- Header -->
-<header class="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-800 dark:to-purple-900 p-4 sm:p-6 text-white shadow-md">
+<header class="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-800 dark:to-purple-900 p-4 sm:p-6 text-white shadow-md relative">
   <div class="max-w-7xl mx-auto">
+    <!-- Top Right Corner Controls -->
+    <div class="absolute top-2 right-2 flex flex-col gap-1">
+      <!-- Language Toggle & Dark Mode in same row -->
+      <div class="flex items-center gap-1">
+        <button id="toggleLanguage" class="p-1.5 rounded-full bg-white/20 hover:bg-white/30 dark:bg-white/10 dark:hover:bg-white/20 text-white transition text-xs font-medium" title="Switch Language">
+          <span id="currentLang">EN</span> 🌐
+        </button>
+        <button id="toggleTheme" class="p-1.5 rounded-full bg-white/20 hover:bg-white/30 dark:bg-white/10 dark:hover:bg-white/20 text-white transition flex items-center justify-center" aria-label="Toggle color theme">
+          <svg id="sunIcon" class="w-4 h-4 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v-2m0 19v-2m7.5-7.5h2m-19 0h2m12.02 5.02 1.42 1.42m-14.08-14.1 1.42 1.42m0 11.26-1.42 1.42m14.1-14.08-1.42 1.42M12 7.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z" />
+          </svg>
+          <svg id="moonIcon" class="w-4 h-4 hidden" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M17.293 13.293a8 8 0 0 1-10.586-10.586A8 8 0 1 0 17.293 13.293Z" />
+          </svg>
+        </button>
+      </div>
+      <!-- Backup Button below -->
+      <button id="backupBtn" class="px-2 py-1 rounded-full bg-white/20 hover:bg-white/30 dark:bg-white/10 dark:hover:bg-white/20 text-white text-xs font-medium transition whitespace-nowrap" title="Backup & Restore">
+        💾 Backup
+      </button>
+    </div>
+    
     <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
       <div class="text-center sm:text-left">
         <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-500 to-purple-500 animate-gradient">HealthChain Pro</h1>
@@ -51,16 +73,6 @@
         <p class="mt-0.5 sm:mt-1 text-[0.65rem] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white/80">Dev by Antu</p>
       </div>
       <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
-        <!-- Language Toggle -->
-        <button id="toggleLanguage" class="px-3 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-xs sm:text-sm font-medium hover:bg-white/25 transition" title="Switch Language">
-          <span id="currentLang">EN</span> 🌐
-        </button>
-        
-        <!-- Backup Button -->
-        <button id="backupBtn" class="px-3 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-xs sm:text-sm font-medium hover:bg-white/25 transition" title="Backup & Restore">
-          💾 Backup
-        </button>
-        
         <!-- User Authentication Display -->
         <div class="flex items-center gap-2">
   <button id="profileBtn" class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-sm font-medium hover:bg-white/25 transition" title="View profile" aria-expanded="false" aria-controls="profilePanel">
@@ -80,14 +92,6 @@
       <span id="ipfsStatus" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 whitespace-nowrap">IPFS: ⏳</span>
       <span id="blockchainStatus" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 whitespace-nowrap">Polygon: ⏳</span>
     </div>
-    <button id="toggleTheme" class="p-2 rounded-full bg-white/20 hover:bg-white/30 dark:bg-white/10 dark:hover:bg-white/20 text-white transition flex items-center justify-center" aria-label="Toggle color theme">
-      <svg id="sunIcon" class="w-5 h-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v-2m0 19v-2m7.5-7.5h2m-19 0h2m12.02 5.02 1.42 1.42m-14.08-14.1 1.42 1.42m0 11.26-1.42 1.42m14.1-14.08-1.42 1.42M12 7.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z" />
-      </svg>
-      <svg id="moonIcon" class="w-5 h-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M17.293 13.293a8 8 0 0 1-10.586-10.586A8 8 0 1 0 17.293 13.293Z" />
-      </svg>
-    </button>
   </div>
   </div>
 </header>

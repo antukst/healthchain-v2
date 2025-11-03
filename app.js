@@ -1127,14 +1127,14 @@ function renderPatientList(patients) {
   const checkboxDisabled = perms.includes('delete') ? '' : 'disabled';
 
     // Build action buttons based on permissions
-    let actionButtons = `<button onclick="viewPatientDetails('${patient._id}')" class="inline-flex items-center bg-blue-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-blue-600 whitespace-nowrap">View</button>`;
-    actionButtons += ` <button onclick="showPatientQRCode('${patient._id}')" class="inline-flex items-center bg-teal-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-teal-600 whitespace-nowrap" title="Generate QR Code">QR</button>`;
+    let actionButtons = `<button onclick="viewPatientDetails('${patient._id}')" class="bg-blue-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-blue-600 whitespace-nowrap">View</button>`;
+    actionButtons += ` <button onclick="showPatientQRCode('${patient._id}')" class="bg-teal-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-teal-600 whitespace-nowrap" title="Generate QR Code">QR</button>`;
     if (perms.includes('write')) {
-      actionButtons += ` <button onclick="editPatient('${patient._id}')" class="inline-flex items-center bg-yellow-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-yellow-600 whitespace-nowrap">Edit</button>`;
-      actionButtons += ` <button onclick="sharePatient('${patient._id}')" class="inline-flex items-center bg-purple-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-purple-600 whitespace-nowrap hidden sm:inline-flex">Share</button>`;
+      actionButtons += ` <button onclick="editPatient('${patient._id}')" class="bg-yellow-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-yellow-600 whitespace-nowrap">Edit</button>`;
+      actionButtons += ` <button onclick="sharePatient('${patient._id}')" class="bg-purple-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-purple-600 whitespace-nowrap hidden sm:inline-block">Share</button>`;
     }
     if (perms.includes('delete')) {
-      actionButtons += ` <button onclick="deletePatient('${patient._id}')" class="inline-flex items-center bg-red-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-red-600 delete-btn whitespace-nowrap hidden sm:inline-flex">Delete</button>`;
+      actionButtons += ` <button onclick="deletePatient('${patient._id}')" class="bg-red-500 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm hover:bg-red-600 delete-btn whitespace-nowrap hidden sm:inline-block">Delete</button>`;
     }
 
     const shortId = (patient._id && patient._id.includes('_')) ? patient._id.split('_')[1] : patient._id;
@@ -1158,8 +1158,8 @@ function renderPatientList(patients) {
       <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 text-gray-900 dark:text-white text-[10px] sm:text-xs md:text-sm max-w-[100px] sm:max-w-[150px] md:max-w-none truncate">${sanitizeField(patient.metadata?.diagnosis, 'Not specified')}</td>
       <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 text-gray-900 dark:text-white text-[10px] sm:text-xs md:text-sm hidden lg:table-cell">${sanitizeField(patient.metadata?.prescription, 'N/A')}</td>
       <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 text-gray-900 dark:text-white text-[10px] sm:text-xs md:text-sm hidden xl:table-cell">${formatDate(patient.metadata?.created_at, 'N/A')}</td>
-      <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2">
-        <div class="flex items-center justify-center gap-0.5 sm:gap-1 md:gap-2 flex-wrap">
+      <td class="border border-gray-300 dark:border-gray-600 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 whitespace-nowrap">
+        <div class="flex items-center justify-center gap-1 flex-nowrap">
           ${actionButtons}
         </div>
       </td>
