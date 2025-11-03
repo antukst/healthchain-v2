@@ -2330,7 +2330,12 @@ document.getElementById('importBtn').addEventListener('click', () => {
 
       if (name.endsWith('.json')) {
         const text = await file.text();
-        const importData = JSON.parse(text);
+        let importData = JSON.parse(text);
+
+        // Handle array wrapper format [{...}] - unwrap first element
+        if (Array.isArray(importData) && importData.length === 1 && importData[0] && typeof importData[0] === 'object') {
+          importData = importData[0]; // Unwrap the array
+        }
 
         // Special-case: prescriptions export
         if (importData && Array.isArray(importData.prescriptions)) {
@@ -2407,17 +2412,20 @@ document.getElementById('importBtn').addEventListener('click', () => {
 
       // Map common column names to patient fields with flexible matching
       function mapRowToPatient(r) {
+        // Check if data is nested inside metadata object
+        const data = r.metadata || r;
+        
         // Flexible key matching - supports multiple naming conventions
         const findKey = (...possibleNames) => {
           for (const name of possibleNames) {
             // Try exact match first (case-insensitive, no spaces/underscores/hyphens)
-            const exactMatch = Object.keys(r).find(k => 
+            const exactMatch = Object.keys(data).find(k => 
               k.toLowerCase().replace(/[_\s-]/g, '') === name.toLowerCase().replace(/[_\s-]/g, '')
             );
             if (exactMatch) return exactMatch;
             
             // Try partial match
-            const partialMatch = Object.keys(r).find(k => 
+            const partialMatch = Object.keys(data).find(k => 
               k.toLowerCase().includes(name.toLowerCase())
             );
             if (partialMatch) return partialMatch;
@@ -2427,21 +2435,21 @@ document.getElementById('importBtn').addEventListener('click', () => {
         
         const get = (...possibleNames) => {
           const key = findKey(...possibleNames);
-          return key ? r[key] : '';
+          return key ? data[key] : '';
         };
 
         const patientData = {
           name: get('name', 'patientname', 'fullname', 'patient_name', 'full_name') || '',
           age: parseInt(get('age')) || '',
           gender: get('gender', 'sex') || '',
-          diagnosis: get('diagnosis', 'disease') || '',
-          prescription: get('prescription', 'prescriptionid', 'prescription_id') || '',
+          diagnosis: get('diagnosis', 'disease', 'primarycondition', 'primary_condition', 'primary', 'condition') || '',
+          prescription: get('prescription', 'prescriptionid', 'prescription_id', 'rx', 'rxid') || '',
           room: get('room', 'roomnumber', 'room_number') || '',
-          medical_history: get('medicalhistory', 'medical_history', 'history') || '',
+          medical_history: get('medicalhistory', 'medical_history', 'history', 'comorbidities', 'comorbidity') || '',
           allergies: get('allergies', 'allergy') || '',
           emergency_contact: get('emergencycontact', 'emergency_contact', 'contact', 'phone') || '',
           created_by: currentUser ? currentUser.id : 'import',
-          created_at: new Date().toISOString()
+          created_at: get('created_at', 'createdat') || new Date().toISOString()
         };
         return patientData;
       }
@@ -2450,6 +2458,7 @@ document.getElementById('importBtn').addEventListener('click', () => {
       for (const row of rows) {
         try {
           const patientObj = mapRowToPatient(row);
+          console.log('Mapped patient:', patientObj); // Debug log
           // Skip completely empty rows
           if (!patientObj.name && !patientObj.age && !patientObj.diagnosis) continue;
           await securePatientDB.addPatient(patientObj);
