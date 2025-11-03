@@ -2422,12 +2422,21 @@ document.getElementById('importBtn').addEventListener('click', () => {
         // Flexible key matching - supports multiple naming conventions
         const findKey = (...possibleNames) => {
           for (const name of possibleNames) {
-            // Try exact match first (case-insensitive, no spaces/underscores/hyphens)
+            // Try exact match with case-insensitive comparison (preserving spaces)
+            const exactMatchWithSpaces = Object.keys(data).find(k => 
+              k.toLowerCase() === name.toLowerCase()
+            );
+            if (exactMatchWithSpaces) {
+              console.log(`Found exact match for "${name}": key="${exactMatchWithSpaces}", value="${data[exactMatchWithSpaces]}"`);
+              return exactMatchWithSpaces;
+            }
+            
+            // Try exact match without spaces/underscores/hyphens
             const exactMatch = Object.keys(data).find(k => 
               k.toLowerCase().replace(/[_\s-]/g, '') === name.toLowerCase().replace(/[_\s-]/g, '')
             );
             if (exactMatch) {
-              console.log(`Found match for "${name}": key="${exactMatch}", value="${data[exactMatch]}"`);
+              console.log(`Found normalized match for "${name}": key="${exactMatch}", value="${data[exactMatch]}"`);
               return exactMatch;
             }
             
@@ -2450,17 +2459,17 @@ document.getElementById('importBtn').addEventListener('click', () => {
         };
 
         const patientData = {
-          name: get('name', 'patientname', 'fullname', 'patient_name', 'full_name') || '',
-          age: parseInt(get('age')) || '',
-          gender: get('gender', 'sex') || '',
-          diagnosis: get('diagnosis', 'disease', 'primarycondition', 'primary_condition', 'primary', 'condition') || '',
-          prescription: get('prescription', 'prescriptionid', 'prescription_id', 'rx', 'rxid') || '',
-          room: get('room', 'roomnumber', 'room_number') || '',
-          medical_history: get('medicalhistory', 'medical_history', 'history', 'comorbidities', 'comorbidity') || '',
-          allergies: get('allergies', 'allergy') || '',
-          emergency_contact: get('emergencycontact', 'emergency_contact', 'contact', 'phone') || '',
+          name: get('name', 'patientname', 'fullname', 'patient_name', 'full_name', 'Name') || '',
+          age: parseInt(get('age', 'Age')) || '',
+          gender: get('gender', 'sex', 'Gender') || '',
+          diagnosis: get('diagnosis', 'disease', 'primarycondition', 'primary_condition', 'primary', 'condition', 'Primary Condition', 'PrimaryCondition') || '',
+          prescription: get('prescription', 'prescriptionid', 'prescription_id', 'rx', 'rxid', 'Prescription') || '',
+          room: get('room', 'roomnumber', 'room_number', 'Room Number', 'Room', 'RoomNumber') || '',
+          medical_history: get('medicalhistory', 'medical_history', 'history', 'comorbidities', 'comorbidity', 'Comorbidities', 'Medical History') || '',
+          allergies: get('allergies', 'allergy', 'Allergies') || '',
+          emergency_contact: get('emergencycontact', 'emergency_contact', 'contact', 'phone', 'Phone', 'Emergency Contact') || '',
           created_by: currentUser ? currentUser.id : 'import',
-          created_at: get('created_at', 'createdat') || new Date().toISOString()
+          created_at: get('created_at', 'createdat', 'created') || new Date().toISOString()
         };
         
         console.log('Final mapped patient:', patientData); // Debug: show final result
