@@ -2415,6 +2415,10 @@ document.getElementById('importBtn').addEventListener('click', () => {
         // Check if data is nested inside metadata object
         const data = r.metadata || r;
         
+        console.log('Raw row data:', r); // Debug: show raw data
+        console.log('Using data object:', data); // Debug: show what we're mapping from
+        console.log('Available keys:', Object.keys(data)); // Debug: show all keys
+        
         // Flexible key matching - supports multiple naming conventions
         const findKey = (...possibleNames) => {
           for (const name of possibleNames) {
@@ -2422,14 +2426,21 @@ document.getElementById('importBtn').addEventListener('click', () => {
             const exactMatch = Object.keys(data).find(k => 
               k.toLowerCase().replace(/[_\s-]/g, '') === name.toLowerCase().replace(/[_\s-]/g, '')
             );
-            if (exactMatch) return exactMatch;
+            if (exactMatch) {
+              console.log(`Found match for "${name}": key="${exactMatch}", value="${data[exactMatch]}"`);
+              return exactMatch;
+            }
             
             // Try partial match
             const partialMatch = Object.keys(data).find(k => 
               k.toLowerCase().includes(name.toLowerCase())
             );
-            if (partialMatch) return partialMatch;
+            if (partialMatch) {
+              console.log(`Found partial match for "${name}": key="${partialMatch}", value="${data[partialMatch]}"`);
+              return partialMatch;
+            }
           }
+          console.warn(`No match found for any of: ${possibleNames.join(', ')}`);
           return null;
         };
         
@@ -2451,6 +2462,8 @@ document.getElementById('importBtn').addEventListener('click', () => {
           created_by: currentUser ? currentUser.id : 'import',
           created_at: get('created_at', 'createdat') || new Date().toISOString()
         };
+        
+        console.log('Final mapped patient:', patientData); // Debug: show final result
         return patientData;
       }
 
