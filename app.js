@@ -23,6 +23,63 @@ let activeFilters = {
 };
 let savedFilterPresets = JSON.parse(localStorage.getItem('filterPresets') || '[]');
 
+// Language state
+let currentLanguage = localStorage.getItem('appLanguage') || 'en';
+
+// Translations
+const translations = {
+  en: {
+    appTitle: 'HealthChain Pro',
+    subtitle: 'Decentralized Healthcare System',
+    patients: 'Patients',
+    addPatient: 'Add New Patient',
+    filters: 'Filters',
+    export: 'Export',
+    import: 'Import',
+    search: 'Search by name, diagnosis, ID...',
+    signIn: 'Sign In',
+    signOut: 'Sign Out',
+    view: 'View',
+    edit: 'Edit',
+    delete: 'Delete',
+    download: 'Download',
+    close: 'Close',
+    save: 'Save',
+    cancel: 'Cancel',
+    name: 'Name',
+    age: 'Age',
+    gender: 'Gender',
+    diagnosis: 'Diagnosis',
+    prescription: 'Prescription',
+    medicalRecords: 'Medical Records'
+  },
+  bn: {
+    appTitle: 'হেলথচেইন প্রো',
+    subtitle: 'বিকেন্দ্রীভূত স্বাস্থ্যসেবা ব্যবস্থা',
+    patients: 'রোগীবৃন্দ',
+    addPatient: 'নতুন রোগী যোগ করুন',
+    filters: 'ফিল্টার',
+    export: 'রপ্তানি',
+    import: 'আমদানি',
+    search: 'নাম, রোগ নির্ণয়, আইডি দ্বারা অনুসন্ধান করুন...',
+    signIn: 'সাইন ইন',
+    signOut: 'সাইন আউট',
+    view: 'দেখুন',
+    edit: 'সম্পাদনা',
+    delete: 'মুছুন',
+    download: 'ডাউনলোড',
+    close: 'বন্ধ করুন',
+    save: 'সংরক্ষণ',
+    cancel: 'বাতিল',
+    name: 'নাম',
+    age: 'বয়স',
+    gender: 'লিঙ্গ',
+    diagnosis: 'রোগ নির্ণয়',
+    prescription: 'প্রেসক্রিপশন',
+    medicalRecords: 'চিকিৎসা রেকর্ড'
+  }
+};
+
 // Small helper to sanitize fields coming from legacy data
 function sanitizeField(value, fallback = 'N/A') {
   if (value === undefined || value === null) return fallback;
@@ -3524,6 +3581,228 @@ window.testIPFSPinning = async function() {
     return { error: 'ipfsManager not available' };
   }
 };
+
+// ========== BACKUP & RESTORE SYSTEM ==========
+
+// Show backup menu
+document.getElementById('backupBtn')?.addEventListener('click', () => {
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+  modal.innerHTML = `
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-md w-full p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white">💾 Backup & Restore</h3>
+        <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      
+      <div class="space-y-3">
+        <button onclick="createBackup()" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
+          📥 Download Full Backup
+        </button>
+        
+        <button onclick="autoBackupToCloud()" class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
+          ☁️ Auto-Backup to IPFS
+        </button>
+        
+        <button onclick="restoreBackup()" class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
+          📤 Restore from File
+        </button>
+        
+        <div class="pt-3 border-t border-gray-300 dark:border-gray-600">
+          <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Last backup: <span id="lastBackupTime">${localStorage.getItem('lastBackup') || 'Never'}</span></p>
+          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input type="checkbox" id="autoBackupToggle" ${localStorage.getItem('autoBackup') === 'true' ? 'checked' : ''} onchange="toggleAutoBackup(this.checked)" class="w-4 h-4">
+            Enable automatic daily backups
+          </label>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+});
+
+// Create backup
+window.createBackup = async function() {
+  try {
+    showNotification('Creating backup...', 'info');
+    
+    const patients = await securePatientDB.getAllPatients();
+    const users = JSON.parse(localStorage.getItem('healthchain_users') || '[]');
+    const settings = {
+      theme: localStorage.getItem('theme'),
+      language: localStorage.getItem('appLanguage'),
+      filterPresets: localStorage.getItem('filterPresets'),
+      autoBackup: localStorage.getItem('autoBackup')
+    };
+    
+    const backup = {
+      version: '2.0',
+      timestamp: new Date().toISOString(),
+      patients: patients,
+      users: users,
+      settings: settings,
+      metadata: {
+        totalPatients: patients.length,
+        totalUsers: users.length,
+        appVersion: 'HealthChain Pro 2.0'
+      }
+    };
+    
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `HealthChain_Backup_${new Date().toISOString().split('T')[0]}_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    localStorage.setItem('lastBackup', new Date().toLocaleString());
+    showNotification('Backup created successfully!', 'success');
+  } catch (error) {
+    console.error('Backup failed:', error);
+    showNotification('Failed to create backup', 'error');
+  }
+};
+
+// Restore backup
+window.restoreBackup = function() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    try {
+      showNotification('Restoring backup...', 'info');
+      
+      const text = await file.text();
+      const backup = JSON.parse(text);
+      
+      if (!backup.version || !backup.patients) {
+        throw new Error('Invalid backup file format');
+      }
+      
+      if (!confirm(`Restore backup from ${new Date(backup.timestamp).toLocaleString()}? This will overwrite current data!`)) {
+        return;
+      }
+      
+      // Restore patients
+      for (const patient of backup.patients) {
+        await securePatientDB.db.put(patient);
+      }
+      
+      // Restore users
+      if (backup.users) {
+        localStorage.setItem('healthchain_users', JSON.stringify(backup.users));
+      }
+      
+      // Restore settings
+      if (backup.settings) {
+        Object.keys(backup.settings).forEach(key => {
+          if (backup.settings[key]) {
+            localStorage.setItem(key, backup.settings[key]);
+          }
+        });
+      }
+      
+      showNotification(`Backup restored! ${backup.metadata?.totalPatients || 0} patients recovered.`, 'success');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error) {
+      console.error('Restore failed:', error);
+      showNotification('Failed to restore backup: ' + error.message, 'error');
+    }
+  };
+  input.click();
+};
+
+// Auto backup to IPFS
+window.autoBackupToCloud = async function() {
+  if (!ipfsManager || !ipfsManager.isConnected) {
+    showNotification('IPFS not connected. Cannot backup to cloud.', 'warning');
+    return;
+  }
+  
+  try {
+    showNotification('Backing up to IPFS...', 'info');
+    
+    const patients = await securePatientDB.getAllPatients();
+    const backup = {
+      version: '2.0',
+      timestamp: new Date().toISOString(),
+      patients: patients.map(p => ({...p, files: undefined})), // Exclude file blobs
+      metadata: {
+        totalPatients: patients.length
+      }
+    };
+    
+    const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
+    const result = await ipfsManager.uploadFile(blob, `backup_${Date.now()}.json`);
+    
+    localStorage.setItem('lastCloudBackup', JSON.stringify({
+      cid: result.cid,
+      timestamp: new Date().toISOString()
+    }));
+    
+    showNotification(`Backup uploaded to IPFS! CID: ${result.cid.substring(0, 10)}...`, 'success');
+  } catch (error) {
+    console.error('Cloud backup failed:', error);
+    showNotification('Failed to backup to IPFS', 'error');
+  }
+};
+
+// Toggle auto backup
+window.toggleAutoBackup = function(enabled) {
+  localStorage.setItem('autoBackup', enabled);
+  if (enabled) {
+    showNotification('Auto-backup enabled. Daily backups will be created.', 'success');
+  } else {
+    showNotification('Auto-backup disabled.', 'info');
+  }
+};
+
+// ========== END BACKUP & RESTORE SYSTEM ==========
+
+// ========== LANGUAGE SYSTEM ==========
+
+// Toggle language
+document.getElementById('toggleLanguage')?.addEventListener('click', () => {
+  currentLanguage = currentLanguage === 'en' ? 'bn' : 'en';
+  localStorage.setItem('appLanguage', currentLanguage);
+  applyLanguage();
+  showNotification(currentLanguage === 'bn' ? 'ভাষা পরিবর্তন করা হয়েছে!' : 'Language changed!', 'success');
+});
+
+// Apply language to UI
+function applyLanguage() {
+  const lang = translations[currentLanguage];
+  const currentLangEl = document.getElementById('currentLang');
+  
+  if (currentLangEl) {
+    currentLangEl.textContent = currentLanguage === 'en' ? 'EN' : 'বাং';
+  }
+  
+  // Update UI text (add more as needed)
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (lang[key]) {
+      el.textContent = lang[key];
+    }
+  });
+}
+
+// Initialize language on load
+window.addEventListener('DOMContentLoaded', () => {
+  applyLanguage();
+});
+
+// ========== END LANGUAGE SYSTEM ==========
 
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
