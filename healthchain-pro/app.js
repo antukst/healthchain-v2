@@ -2910,14 +2910,42 @@ async function sharePatientViaLink(patientId) {
   try {
     showNotification('Generating share link...', 'info');
     
-    const doc = await securePatientDB.db.get(patientId);
+    // Get patient data
+    const patient = await securePatientDB.getPatient(patientId);
+    
+    // Check if patient has IPFS CID, if not, upload to IPFS first
+    let ipfsCid = patient.ipfs_cid;
+    if (!ipfsCid) {
+      console.log('Patient not synced to IPFS yet, uploading...');
+      // Get the full encrypted patient data
+      const doc = await securePatientDB.db.get(patientId);
+      const encryptedData = doc.encrypted_data || await encryptionManager.encrypt(patient, encryptionKey);
+      
+      // Upload to IPFS
+      ipfsCid = await ipfsManager.addData(encryptedData, {
+        path: `/healthchain/patients/${patientId}_${Date.now()}.json`
+      });
+      
+      // Update local document with IPFS CID
+      await securePatientDB.db.put({
+        ...doc,
+        ipfs_cid: ipfsCid
+      });
+      
+      console.log('Patient uploaded to IPFS:', ipfsCid);
+    }
     
     // Create compact share data
     const shareData = {
       v: 1, // version
       id: patientId,
-      cid: doc.ipfs_cid,
-      m: doc.metadata, // metadata
+      cid: ipfsCid,
+      m: {
+        name: patient.name || patient.metadata?.name || '',
+        age: patient.age || patient.metadata?.age || '',
+        gender: patient.gender || patient.metadata?.gender || '',
+        diagnosis: patient.diagnosis || patient.metadata?.diagnosis || 'Not specified'
+      },
       t: Date.now()
     };
     
@@ -2950,7 +2978,7 @@ async function sharePatientViaLink(patientId) {
           <button onclick="copyShareLink('${shareUrl}')" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">
             📋 Copy Link
           </button>
-          <button onclick="shareViaWhatsApp('${encodeURIComponent(shareUrl)}', '${doc.metadata.name}')" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold">
+          <button onclick="shareViaWhatsApp('${encodeURIComponent(shareUrl)}', '${shareData.m.name}')" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold">
             💬 WhatsApp
           </button>
         </div>
