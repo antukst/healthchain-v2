@@ -54,6 +54,12 @@ class SecurePatientDB {
 
   // Encrypt and store patient data
   async addPatient(patientData) {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🏥 DB addPatient called');
+    console.log('Patient data:', patientData);
+    console.log('System initialized:', isInitialized);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
     if (!isInitialized) {
       throw new Error('System not initialized. Call initializeSystem() first.');
     }
@@ -63,13 +69,17 @@ class SecurePatientDB {
       const normalizedAge = Number.isFinite(Number(patientData.age)) ? Number(patientData.age) : '';
       const docId = `patient_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+      console.log('🔐 Encrypting patient data...');
       // Encrypt sensitive data
       const encryptedData = await encryptionManager.encrypt(patientData, encryptionKey);
+      console.log('✅ Encryption complete. Data length:', encryptedData.length);
 
+      console.log('📤 Calling ipfsManager.addData...');
       // Store on IPFS
       const ipfsCid = await ipfsManager.addData(encryptedData, {
         path: `/healthchain/patients/${docId}/profile.enc`
       });
+      console.log('✅ IPFS upload complete. CID:', ipfsCid);
 
       // Create database document with IPFS reference
       const doc = {
@@ -93,6 +103,17 @@ class SecurePatientDB {
       };
 
       const result = await this.db.put(doc);
+
+      // Register in sync registry for multi-device sync
+      if (window.syncManager) {
+        try {
+          await syncManager.registerIPFSRecord(docId, ipfsCid, doc.metadata);
+          console.log('✅ Patient registered in sync registry');
+        } catch (syncError) {
+          console.warn('⚠️ Failed to register in sync registry:', syncError);
+          // Don't fail the whole operation if sync fails
+        }
+      }
 
       // Create blockchain proof
       try {

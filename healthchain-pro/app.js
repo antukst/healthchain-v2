@@ -866,6 +866,7 @@ function renderPatientList(patients) {
     if (perms.includes('write')) {
       actionButtons += ` <button onclick="editPatient('${patient._id}')" class="inline-flex items-center bg-yellow-500 text-white px-2 py-1 rounded text-sm hover:bg-yellow-600">Edit</button>`;
       actionButtons += ` <button onclick="sharePatient('${patient._id}')" class="inline-flex items-center bg-purple-500 text-white px-2 py-1 rounded text-sm hover:bg-purple-600">Share</button>`;
+      actionButtons += ` <button onclick="generatePatientQR('${patient._id}')" class="inline-flex items-center bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600" title="Generate QR Code">QR</button>`;
     }
     if (perms.includes('delete')) {
       actionButtons += ` <button onclick="deletePatient('${patient._id}')" class="inline-flex items-center bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600 delete-btn">Delete</button>`;
@@ -911,13 +912,22 @@ function renderPatientList(patients) {
 // Handle patient form submission
 document.getElementById('patientForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('📝 Patient form submitted');
+  console.log('System initialized:', isSystemInitialized);
+  console.log('Current user:', currentUser);
+  console.log('User permissions:', currentUser?.permissions);
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   if (!isSystemInitialized) {
+    console.error('❌ System not initialized');
     showNotification('System not initialized yet', 'error');
     return;
   }
 
   if (!currentUser || !Array.isArray(currentUser.permissions) || !currentUser.permissions.includes('write')) {
+    console.error('❌ No write permission');
     showNotification('You do not have permission to add patients', 'error');
     return;
   }
@@ -936,11 +946,15 @@ document.getElementById('patientForm').addEventListener('submit', async (e) => {
     created_by: currentUser ? currentUser.id : 'unknown',
     created_at: new Date().toISOString()
   };
+  
+  console.log('📋 Patient data prepared:', patientData);
 
   try {
     showNotification('Adding patient securely...', 'info');
+    console.log('🔄 Calling securePatientDB.addPatient...');
 
     const result = await securePatientDB.addPatient(patientData);
+    console.log('✅ Patient added successfully. Result:', result);
 
     // Handle photo upload if provided
     const photoFile = formData.get('photo');
@@ -2731,4 +2745,102 @@ async function testIPFSConnection() {
     return false;
   }
 }
+
+// ==================== QR CODE SYNC FUNCTIONS ====================
+
+/**
+ * Generate QR Code for patient
+ */
+async function generatePatientQR(patientId) {
+  try {
+    showNotification('Generating QR code...', 'info');
+    
+    const qrDataUrl = await syncManager.generatePatientQRCode(patientId);
+    
+    if (!qrDataUrl) {
+      throw new Error('Failed to generate QR code');
+    }
+
+    // Create modal to display QR code
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">Patient QR Code</h3>
+          <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="bg-white p-4 rounded-xl mb-4">
+          <img src="${qrDataUrl}" alt="Patient QR Code" class="w-full">
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-400 text-center mb-4">
+          📱 Scan this QR code on mobile to import patient data instantly
+        </p>
+        <div class="flex gap-3">
+          <button onclick="downloadQRCode('${qrDataUrl}', '${patientId}')" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">
+            Download QR
+          </button>
+          <button onclick="this.closest('.fixed').remove()" class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-semibold">
+            Close
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+
+    showNotification('QR code generated successfully!', 'success');
+  } catch (error) {
+    console.error('QR generation failed:', error);
+    showNotification('Failed to generate QR code: ' + error.message, 'error');
+  }
+}
+
+/**
+ * Download QR Code image
+ */
+function downloadQRCode(dataUrl, patientId) {
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = `patient-qr-${patientId}.png`;
+  link.click();
+  showNotification('QR code downloaded!', 'success');
+}
+
+/**
+ * Import patient from QR code (called from mobile or QR scanner)
+ */
+async function importFromQRCode(qrData) {
+  try {
+    showNotification('Importing patient from QR code...', 'info');
+    
+    const patientId = await syncManager.importFromQRCode(qrData);
+    
+    if (patientId) {
+      showNotification('Patient imported successfully!', 'success');
+      await refreshPatientList();
+    } else {
+      throw new Error('Import failed');
+    }
+  } catch (error) {
+    console.error('QR import failed:', error);
+    showNotification('Failed to import from QR code: ' + error.message, 'error');
+  }
+}
+
+// Make functions globally available
+window.generatePatientQR = generatePatientQR;
+window.downloadQRCode = downloadQRCode;
+window.importFromQRCode = importFromQRCode;
 
