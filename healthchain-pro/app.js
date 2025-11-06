@@ -1816,12 +1816,16 @@ async function downloadFile(cidOrBlob, filename) {
 
 // Share patient data with other healthcare providers
 async function sharePatient(patientId) {
+  console.log('🔄 sharePatient called for:', patientId);
+  
   if (!currentUser || !Array.isArray(currentUser.permissions) || !currentUser.permissions.includes('write')) {
     showNotification('You do not have permission to share patient data', 'error');
     return;
   }
 
   try {
+    console.log('📱 Opening share options modal...');
+    
     // Show options modal
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
@@ -1831,7 +1835,7 @@ async function sharePatient(patientId) {
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Choose how to share this patient record:</p>
         
         <div class="space-y-3">
-          <button onclick="sharePatientViaLink('${patientId}'); this.closest('.fixed').remove();" 
+          <button onclick="window.sharePatientViaLink('${patientId}'); this.closest('.fixed').remove();" 
             class="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
             <span class="text-2xl">📱</span>
             <div class="text-left">
@@ -1840,7 +1844,7 @@ async function sharePatient(patientId) {
             </div>
           </button>
           
-          <button onclick="generatePatientQR('${patientId}'); this.closest('.fixed').remove();" 
+          <button onclick="window.generatePatientQR('${patientId}'); this.closest('.fixed').remove();" 
             class="w-full flex items-center gap-3 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition">
             <span class="text-2xl">📷</span>
             <div class="text-left">
@@ -1849,7 +1853,7 @@ async function sharePatient(patientId) {
             </div>
           </button>
           
-          <button onclick="sharePatientLegacy('${patientId}'); this.closest('.fixed').remove();" 
+          <button onclick="window.sharePatientLegacy('${patientId}'); this.closest('.fixed').remove();" 
             class="w-full flex items-center gap-3 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition">
             <span class="text-2xl">🔗</span>
             <div class="text-left">
@@ -1867,13 +1871,14 @@ async function sharePatient(patientId) {
     `;
     
     document.body.appendChild(modal);
+    console.log('✅ Modal added to DOM');
     
     modal.addEventListener('click', (e) => {
       if (e.target === modal) modal.remove();
     });
     
   } catch (error) {
-    console.error('Share failed:', error);
+    console.error('❌ Share failed:', error);
     showNotification('Failed to open share options: ' + error.message, 'error');
   }
 }
@@ -3054,6 +3059,7 @@ window.generatePatientQR = generatePatientQR;
 window.downloadQRCode = downloadQRCode;
 window.importFromQRCode = importFromQRCode;
 window.sharePatientViaLink = sharePatientViaLink;
+window.sharePatientLegacy = sharePatientLegacy;
 window.copyShareLink = copyShareLink;
 window.shareViaWhatsApp = shareViaWhatsApp;
 
