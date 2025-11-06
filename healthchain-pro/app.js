@@ -1835,7 +1835,7 @@ async function sharePatient(patientId) {
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Choose how to share this patient record:</p>
         
         <div class="space-y-3">
-          <button onclick="window.sharePatientViaLink('${patientId}'); this.closest('.fixed').remove();" 
+          <button onclick="sharePatientViaLink('${patientId}'); this.closest('.fixed').remove();" 
             class="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
             <span class="text-2xl">📱</span>
             <div class="text-left">
@@ -1844,7 +1844,7 @@ async function sharePatient(patientId) {
             </div>
           </button>
           
-          <button onclick="window.generatePatientQR('${patientId}'); this.closest('.fixed').remove();" 
+          <button onclick="generatePatientQR('${patientId}'); this.closest('.fixed').remove();" 
             class="w-full flex items-center gap-3 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition">
             <span class="text-2xl">📷</span>
             <div class="text-left">
@@ -1853,7 +1853,7 @@ async function sharePatient(patientId) {
             </div>
           </button>
           
-          <button onclick="window.sharePatientLegacy('${patientId}'); this.closest('.fixed').remove();" 
+          <button onclick="sharePatientLegacy('${patientId}'); this.closest('.fixed').remove();" 
             class="w-full flex items-center gap-3 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition">
             <span class="text-2xl">🔗</span>
             <div class="text-left">
