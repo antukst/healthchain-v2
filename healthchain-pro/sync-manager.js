@@ -70,13 +70,27 @@ class SyncManager {
       };
 
       const registryJson = JSON.stringify(registry);
+      
+      // Upload to IPFS with fixed MFS path
       const cid = await ipfsManager.addData(registryJson, {
         path: '/healthchain/sync-registry.json'
       });
 
-      // Store latest registry CID in localStorage for quick access
+      // Store latest registry CID in localStorage AND in IPFS MFS
       localStorage.setItem('healthchain_registry_cid', cid);
+      
+      // Also create a "latest" pointer file that all devices can read
+      const latestPointer = {
+        latest_cid: cid,
+        updated_at: new Date().toISOString()
+      };
+      
+      await ipfsManager.addData(JSON.stringify(latestPointer), {
+        path: '/healthchain/sync-registry-latest.json'
+      });
+      
       console.log('✅ Sync registry uploaded to IPFS:', cid);
+      console.log('📍 Latest pointer updated at /healthchain/sync-registry-latest.json');
       
       this.syncStatus.ipfs.lastSync = new Date().toISOString();
       this.syncStatus.ipfs.status = 'synced';
@@ -98,8 +112,29 @@ class SyncManager {
       this.syncStatus.ipfs.status = 'syncing';
       console.log('🔄 Starting IPFS sync...');
 
-      // Get latest registry CID
-      const registryCid = localStorage.getItem('healthchain_registry_cid');
+      // Try to get latest registry CID from IPFS MFS
+      let registryCid = null;
+      
+      try {
+        // First, try to read the latest pointer from IPFS MFS
+        const latestPointerPath = '/healthchain/sync-registry-latest.json';
+        console.log('📍 Reading latest pointer from IPFS MFS:', latestPointerPath);
+        
+        const pointerData = await this.readFromIPFSMFS(latestPointerPath);
+        if (pointerData) {
+          const pointer = JSON.parse(pointerData);
+          registryCid = pointer.latest_cid;
+          console.log('✅ Found latest registry CID:', registryCid);
+        }
+      } catch (error) {
+        console.log('ℹ️ No latest pointer found in IPFS MFS, checking localStorage...');
+      }
+      
+      // Fallback to localStorage if IPFS MFS read failed
+      if (!registryCid) {
+        registryCid = localStorage.getItem('healthchain_registry_cid');
+      }
+      
       if (!registryCid) {
         console.log('ℹ️ No registry CID found - first time setup');
         this.syncStatus.ipfs.status = 'idle';
@@ -107,6 +142,7 @@ class SyncManager {
       }
 
       // Download registry from IPFS
+      console.log('📥 Downloading registry from IPFS...');
       const registryData = await ipfsManager.getData(registryCid);
       const registry = JSON.parse(registryData);
       
@@ -162,6 +198,27 @@ class SyncManager {
       console.error('❌ IPFS sync failed:', error);
       this.syncStatus.ipfs.status = 'error';
       return { error: error.message };
+    }
+  }
+
+  /**
+   * Read file from IPFS MFS
+   */
+  async readFromIPFSMFS(path) {
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/api/v0/files/read?arg=${encodeURIComponent(path)}`, {
+        method: 'POST'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.text();
+      return data;
+    } catch (error) {
+      console.warn(`Failed to read from IPFS MFS ${path}:`, error.message);
+      return null;
     }
   }
 
