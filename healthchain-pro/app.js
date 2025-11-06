@@ -1822,6 +1822,65 @@ async function sharePatient(patientId) {
   }
 
   try {
+    // Show options modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Share Patient</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Choose how to share this patient record:</p>
+        
+        <div class="space-y-3">
+          <button onclick="sharePatientViaLink('${patientId}'); this.closest('.fixed').remove();" 
+            class="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
+            <span class="text-2xl">📱</span>
+            <div class="text-left">
+              <div>Share Link (Mobile-Friendly)</div>
+              <div class="text-xs opacity-80">Send via WhatsApp, Email, SMS</div>
+            </div>
+          </button>
+          
+          <button onclick="generatePatientQR('${patientId}'); this.closest('.fixed').remove();" 
+            class="w-full flex items-center gap-3 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition">
+            <span class="text-2xl">📷</span>
+            <div class="text-left">
+              <div>QR Code</div>
+              <div class="text-xs opacity-80">Scan with mobile camera</div>
+            </div>
+          </button>
+          
+          <button onclick="sharePatientLegacy('${patientId}'); this.closest('.fixed').remove();" 
+            class="w-full flex items-center gap-3 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition">
+            <span class="text-2xl">🔗</span>
+            <div class="text-left">
+              <div>IPFS Share (Advanced)</div>
+              <div class="text-xs opacity-80">For healthcare providers with IPFS</div>
+            </div>
+          </button>
+        </div>
+        
+        <button onclick="this.closest('.fixed').remove()" 
+          class="w-full mt-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-semibold">
+          Cancel
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+    
+  } catch (error) {
+    console.error('Share failed:', error);
+    showNotification('Failed to open share options: ' + error.message, 'error');
+  }
+}
+
+// Legacy IPFS share (for advanced users)
+async function sharePatientLegacy(patientId) {
+  try {
     const patient = await securePatientDB.getPatient(patientId);
 
     // Create shareable data (without sensitive full details)
@@ -2839,8 +2898,177 @@ async function importFromQRCode(qrData) {
   }
 }
 
+/**
+ * Share patient via shareable link (mobile-friendly)
+ */
+async function sharePatientViaLink(patientId) {
+  try {
+    showNotification('Generating share link...', 'info');
+    
+    const doc = await db.get(patientId);
+    
+    // Create compact share data
+    const shareData = {
+      v: 1, // version
+      id: patientId,
+      cid: doc.ipfs_cid,
+      m: doc.metadata, // metadata
+      t: Date.now()
+    };
+    
+    // Encode to base64
+    const encoded = btoa(JSON.stringify(shareData));
+    const shareUrl = `${window.location.origin}${window.location.pathname}?import=${encoded}`;
+    
+    // Create share modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">📱 Share Patient</h3>
+          <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="mb-4">
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Share this link via WhatsApp, Email, or SMS:</p>
+          <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg break-all text-sm">
+            ${shareUrl}
+          </div>
+        </div>
+        
+        <div class="flex gap-3">
+          <button onclick="copyShareLink('${shareUrl}')" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">
+            📋 Copy Link
+          </button>
+          <button onclick="shareViaWhatsApp('${encodeURIComponent(shareUrl)}', '${doc.metadata.name}')" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold">
+            💬 WhatsApp
+          </button>
+        </div>
+        
+        <button onclick="this.closest('.fixed').remove()" class="w-full mt-3 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-lg font-semibold">
+          Close
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+    
+    showNotification('Share link generated!', 'success');
+  } catch (error) {
+    console.error('Share link generation failed:', error);
+    showNotification('Failed to generate share link: ' + error.message, 'error');
+  }
+}
+
+/**
+ * Copy share link to clipboard
+ */
+function copyShareLink(url) {
+  navigator.clipboard.writeText(url).then(() => {
+    showNotification('Link copied! Now you can paste and send it.', 'success');
+  }).catch(err => {
+    showNotification('Failed to copy: ' + err.message, 'error');
+  });
+}
+
+/**
+ * Share via WhatsApp
+ */
+function shareViaWhatsApp(encodedUrl, patientName) {
+  const message = `HealthChain Patient Record: ${patientName}\n\nImport link: ${decodeURIComponent(encodedUrl)}`;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+  window.open(whatsappUrl, '_blank');
+}
+
+/**
+ * Check if URL has import parameter and auto-import
+ */
+async function checkForAutoImport() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const importData = urlParams.get('import');
+  
+  if (importData) {
+    try {
+      console.log('🔄 Auto-importing from URL...');
+      
+      // Decode import data
+      const data = JSON.parse(atob(importData));
+      
+      // Check if already imported
+      const exists = await db.get(data.id).catch(() => null);
+      if (exists) {
+        showNotification('Patient already imported!', 'info');
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+      
+      showNotification('Importing patient from link...', 'info');
+      
+      // Download from IPFS
+      const encryptedData = await ipfsManager.getData(data.cid);
+      
+      // Create local entry
+      const doc = {
+        _id: data.id,
+        ipfs_cid: data.cid,
+        metadata: data.m,
+        encrypted: true,
+        synced_from: 'share_link',
+        synced_at: new Date().toISOString()
+      };
+      
+      await db.put(doc);
+      
+      showNotification(`Patient "${data.m.name}" imported successfully!`, 'success');
+      
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Refresh list
+      if (typeof refreshPatientList === 'function') {
+        await refreshPatientList();
+      }
+      
+    } catch (error) {
+      console.error('Auto-import failed:', error);
+      showNotification('Failed to import patient: ' + error.message, 'error');
+    }
+  }
+}
+
 // Make functions globally available
 window.generatePatientQR = generatePatientQR;
 window.downloadQRCode = downloadQRCode;
 window.importFromQRCode = importFromQRCode;
+window.sharePatientViaLink = sharePatientViaLink;
+window.copyShareLink = copyShareLink;
+window.shareViaWhatsApp = shareViaWhatsApp;
+
+// Check for auto-import on page load
+document.addEventListener('DOMContentLoaded', () => {
+  if (isSystemInitialized) {
+    checkForAutoImport();
+  } else {
+    // Wait for system to initialize
+    const checkInterval = setInterval(() => {
+      if (isSystemInitialized) {
+        clearInterval(checkInterval);
+        checkForAutoImport();
+      }
+    }, 500);
+  }
+});
 
