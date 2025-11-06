@@ -2908,15 +2908,31 @@ async function importFromQRCode(qrData) {
  */
 async function sharePatientViaLink(patientId) {
   try {
+    console.log('🔄 Starting sharePatientViaLink for patient:', patientId);
     showNotification('Generating share link...', 'info');
     
+    // Check if systems are initialized
+    if (!isSystemInitialized) {
+      throw new Error('System not fully initialized yet. Please wait and try again.');
+    }
+    
+    if (!ipfsManager || !ipfsManager.isConnected) {
+      throw new Error('IPFS is not connected. Please check your internet connection and refresh the page.');
+    }
+    
+    if (!encryptionManager || !encryptionKey) {
+      throw new Error('Encryption system not available. Please refresh the page.');
+    }
+    
     // Get patient data
+    console.log('📋 Getting patient data...');
     const patient = await securePatientDB.getPatient(patientId);
+    console.log('✅ Patient data retrieved:', patient);
     
     // Check if patient has IPFS CID, if not, try to sync it first
     let ipfsCid = patient.ipfs_cid;
     if (!ipfsCid) {
-      console.log('Patient not synced to IPFS, attempting to sync now...');
+      console.log('⚠️ Patient not synced to IPFS, attempting to sync now...');
       showNotification('Syncing patient data to IPFS first...', 'info');
       
       try {
@@ -2935,13 +2951,17 @@ async function sharePatientViaLink(patientId) {
           created_at: patient.metadata?.created_at || new Date().toISOString()
         };
         
+        console.log('🔐 Encrypting patient data...');
         // Encrypt and upload to IPFS
         const encryptedData = await encryptionManager.encrypt(fullPatientData, encryptionKey);
+        console.log('📤 Uploading to IPFS...');
         ipfsCid = await ipfsManager.addData(encryptedData, {
           path: `/healthchain/patients/${patientId}/profile.enc`
         });
+        console.log('✅ IPFS upload complete. CID:', ipfsCid);
         
         // Update the patient document with the new IPFS CID
+        console.log('💾 Updating patient document with new CID...');
         await securePatientDB.db.put({
           _id: patientId,
           _rev: patient._rev,
@@ -2949,14 +2969,15 @@ async function sharePatientViaLink(patientId) {
           metadata: patient.metadata
         });
         
-        console.log('Patient synced to IPFS:', ipfsCid);
+        console.log('🎉 Patient synced to IPFS successfully');
         showNotification('Patient data synced to IPFS!', 'success');
       } catch (syncError) {
-        console.error('Failed to sync patient to IPFS:', syncError);
+        console.error('❌ Failed to sync patient to IPFS:', syncError);
         throw new Error('Failed to sync patient data to IPFS. Please check your connection and try again.');
       }
     }
     
+    console.log('📝 Creating share data...');
     // Create compact share data with minimal patient info
     const shareData = {
       v: 1, // version
@@ -2971,10 +2992,12 @@ async function sharePatientViaLink(patientId) {
       t: Date.now()
     };
     
+    console.log('🔗 Encoding share data...');
     // Encode to base64
     const encoded = btoa(JSON.stringify(shareData));
     const shareUrl = `${window.location.origin}${window.location.pathname}?import=${encoded}`;
     
+    console.log('🎨 Creating share modal...');
     // Create share modal
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
@@ -3020,9 +3043,10 @@ async function sharePatientViaLink(patientId) {
       }
     });
     
+    console.log('✅ Share link generated successfully');
     showNotification('Share link generated!', 'success');
   } catch (error) {
-    console.error('Share link generation failed:', error);
+    console.error('❌ Share link generation failed:', error);
     showNotification('Failed to generate share link: ' + error.message, 'error');
   }
 }
