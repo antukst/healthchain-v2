@@ -2913,29 +2913,51 @@ async function sharePatientViaLink(patientId) {
     // Get patient data
     const patient = await securePatientDB.getPatient(patientId);
     
-    // Check if patient has IPFS CID, if not, upload to IPFS first
+    // Check if patient has IPFS CID, if not, try to sync it first
     let ipfsCid = patient.ipfs_cid;
     if (!ipfsCid) {
-      console.log('Patient not synced to IPFS yet, uploading...');
-      // Get the full encrypted patient data
-      const doc = await securePatientDB.db.get(patientId);
-      const encryptedData = doc.encrypted_data || await encryptionManager.encrypt(patient, encryptionKey);
+      console.log('Patient not synced to IPFS, attempting to sync now...');
+      showNotification('Syncing patient data to IPFS first...', 'info');
       
-      // Upload to IPFS
-      ipfsCid = await ipfsManager.addData(encryptedData, {
-        path: `/healthchain/patients/${patientId}_${Date.now()}.json`
-      });
-      
-      // Update local document with IPFS CID
-      await securePatientDB.db.put({
-        ...doc,
-        ipfs_cid: ipfsCid
-      });
-      
-      console.log('Patient uploaded to IPFS:', ipfsCid);
+      try {
+        // Get the full patient data for re-encryption and upload
+        const fullPatientData = {
+          name: patient.name || patient.metadata?.name || '',
+          age: patient.age || patient.metadata?.age || '',
+          gender: patient.gender || patient.metadata?.gender || '',
+          diagnosis: patient.diagnosis || patient.metadata?.diagnosis || '',
+          prescription: patient.prescription || patient.metadata?.prescription || '',
+          room: patient.room || patient.metadata?.room || '',
+          medical_history: patient.medical_history || patient.metadata?.medical_history || '',
+          allergies: patient.allergies || patient.metadata?.allergies || '',
+          emergency_contact: patient.emergency_contact || patient.metadata?.emergency_contact || '',
+          created_by: patient.metadata?.created_by || '',
+          created_at: patient.metadata?.created_at || new Date().toISOString()
+        };
+        
+        // Encrypt and upload to IPFS
+        const encryptedData = await encryptionManager.encrypt(fullPatientData, encryptionKey);
+        ipfsCid = await ipfsManager.addData(encryptedData, {
+          path: `/healthchain/patients/${patientId}/profile.enc`
+        });
+        
+        // Update the patient document with the new IPFS CID
+        await securePatientDB.db.put({
+          _id: patientId,
+          _rev: patient._rev,
+          ipfs_cid: ipfsCid,
+          metadata: patient.metadata
+        });
+        
+        console.log('Patient synced to IPFS:', ipfsCid);
+        showNotification('Patient data synced to IPFS!', 'success');
+      } catch (syncError) {
+        console.error('Failed to sync patient to IPFS:', syncError);
+        throw new Error('Failed to sync patient data to IPFS. Please check your connection and try again.');
+      }
     }
     
-    // Create compact share data
+    // Create compact share data with minimal patient info
     const shareData = {
       v: 1, // version
       id: patientId,
