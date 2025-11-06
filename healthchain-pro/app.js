@@ -3128,14 +3128,28 @@ async function checkForAutoImport() {
   }
 }
 
-// Make functions globally available
-window.generatePatientQR = generatePatientQR;
-window.downloadQRCode = downloadQRCode;
-window.importFromQRCode = importFromQRCode;
-window.sharePatientViaLink = sharePatientViaLink;
-window.sharePatientLegacy = sharePatientLegacy;
-window.copyShareLink = copyShareLink;
-window.shareViaWhatsApp = shareViaWhatsApp;
+// Debug function to check system status
+window.debugSystemStatus = function() {
+  console.log('🔍 System Status Check:');
+  console.log('isSystemInitialized:', isSystemInitialized);
+  console.log('ipfsManager:', ipfsManager);
+  console.log('ipfsManager.isConnected:', ipfsManager?.isConnected);
+  console.log('encryptionManager:', encryptionManager);
+  console.log('encryptionKey:', encryptionKey ? 'Available' : 'Not available');
+  console.log('currentUser:', currentUser);
+  console.log('currentUser.permissions:', currentUser?.permissions);
+  
+  // Check if we can access securePatientDB
+  console.log('securePatientDB:', securePatientDB);
+  
+  return {
+    systemInitialized: isSystemInitialized,
+    ipfsConnected: ipfsManager?.isConnected,
+    encryptionAvailable: !!(encryptionManager && encryptionKey),
+    userLoggedIn: !!currentUser,
+    hasWritePermission: currentUser?.permissions?.includes('write')
+  };
+};
 
 // Check for auto-import on page load
 document.addEventListener('DOMContentLoaded', () => {
