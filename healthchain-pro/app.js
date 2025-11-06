@@ -2910,7 +2910,7 @@ async function sharePatientViaLink(patientId) {
   try {
     showNotification('Generating share link...', 'info');
     
-    const doc = await db.get(patientId);
+    const doc = await securePatientDB.db.get(patientId);
     
     // Create compact share data
     const shareData = {
@@ -3012,7 +3012,7 @@ async function checkForAutoImport() {
       const data = JSON.parse(atob(importData));
       
       // Check if already imported
-      const exists = await db.get(data.id).catch(() => null);
+      const exists = await securePatientDB.db.get(data.id).catch(() => null);
       if (exists) {
         showNotification('Patient already imported!', 'info');
         // Clean URL
@@ -3035,7 +3035,7 @@ async function checkForAutoImport() {
         synced_at: new Date().toISOString()
       };
       
-      await db.put(doc);
+      await securePatientDB.db.put(doc);
       
       showNotification(`Patient "${data.m.name}" imported successfully!`, 'success');
       
