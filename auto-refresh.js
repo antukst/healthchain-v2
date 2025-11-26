@@ -33,19 +33,25 @@ window.addEventListener('couchdb-sync-change', function(event) {
   }
 });
 
-// Listen for MongoDB sync changes
-window.addEventListener('mongodb-sync-change', function(event) {
-  console.log('📥 Received MongoDB sync change event:', event.detail);
+// Listen for Supabase real-time sync changes
+window.addEventListener('supabase-sync-change', function(event) {
+  console.log('📥 Received Supabase real-time change:', event.detail);
   
-  const { pulled, pushed } = event.detail || {};
+  const { event: changeEvent, record } = event.detail || {};
   
-  if (pulled > 0) {
-    console.log(`🔄 Auto-refreshing UI - ${pulled} records pulled from MongoDB`);
+  if (record) {
+    console.log(`🔄 Real-time change detected: ${changeEvent}`);
     
-    // Show notification to user
-    showNotification(`📥 Synced ${pulled} record(s) from MongoDB Atlas`, 'success');
+    // Show notification based on event type
+    const messages = {
+      'INSERT': '📥 New record added from another device',
+      'UPDATE': '📝 Record updated from another device',
+      'DELETE': '🗑️ Record deleted from another device'
+    };
     
-    // Refresh patient list if we're on the main page
+    showNotification(messages[changeEvent] || '📥 Data synced', 'success');
+    
+    // Refresh patient list
     if (typeof loadPatientList === 'function') {
       setTimeout(() => {
         loadPatientList();
@@ -54,11 +60,31 @@ window.addEventListener('mongodb-sync-change', function(event) {
       }, 500);
     }
     
-    // Refresh dashboard if we're on dashboard page
+    // Refresh dashboard
     if (typeof loadDashboard === 'function') {
       setTimeout(() => {
         loadDashboard();
         console.log('✅ Dashboard refreshed');
+      }, 500);
+    }
+  }
+});
+
+// Listen for Supabase sync complete (periodic sync)
+window.addEventListener('supabase-sync-complete', function(event) {
+  console.log('📥 Supabase periodic sync complete:', event.detail);
+  
+  const { pulled, pushed } = event.detail || {};
+  
+  if (pulled > 0) {
+    console.log(`🔄 Auto-refreshing UI - ${pulled} records synced`);
+    showNotification(`📥 Synced ${pulled} record(s) from cloud`, 'success');
+    
+    // Refresh UI
+    if (typeof loadPatientList === 'function') {
+      setTimeout(() => {
+        loadPatientList();
+        updateStats();
       }, 500);
     }
   }

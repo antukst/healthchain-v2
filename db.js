@@ -65,15 +65,15 @@ const COUCHDB_CONFIG = {
 
 // Initialize remote sync
 let syncHandler = null;
-let mongoSyncHandler = null;
+let supabaseSyncHandler = null;
 
 function setupCouchDBSync() {
-  // Try MongoDB first (preferred for cloud deployment)
-  if (typeof setupMongoDBSync === 'function') {
-    console.log('🔄 Using MongoDB Atlas for cloud sync...');
-    mongoSyncHandler = setupMongoDBSync(db);
-    if (mongoSyncHandler) {
-      return mongoSyncHandler;
+  // Try Supabase first (preferred for cloud deployment - browser-friendly!)
+  if (typeof setupSupabaseSync === 'function') {
+    console.log('🔄 Using Supabase for cloud sync...');
+    supabaseSyncHandler = setupSupabaseSync(db);
+    if (supabaseSyncHandler) {
+      return supabaseSyncHandler;
     }
   }
 
