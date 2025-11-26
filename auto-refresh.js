@@ -4,7 +4,7 @@ console.log('🔄 Auto-refresh module loaded');
 
 // Listen for CouchDB sync changes
 window.addEventListener('couchdb-sync-change', function(event) {
-  console.log('📥 Received sync change event:', event.detail);
+  console.log('📥 Received CouchDB sync change event:', event.detail);
   
   const docs = event.detail.docs || [];
   
@@ -13,6 +13,37 @@ window.addEventListener('couchdb-sync-change', function(event) {
     
     // Show notification to user
     showNotification(`📥 Synced ${docs.length} record(s) from remote device`, 'info');
+    
+    // Refresh patient list if we're on the main page
+    if (typeof loadPatientList === 'function') {
+      setTimeout(() => {
+        loadPatientList();
+        updateStats();
+        console.log('✅ Patient list refreshed');
+      }, 500);
+    }
+    
+    // Refresh dashboard if we're on dashboard page
+    if (typeof loadDashboard === 'function') {
+      setTimeout(() => {
+        loadDashboard();
+        console.log('✅ Dashboard refreshed');
+      }, 500);
+    }
+  }
+});
+
+// Listen for MongoDB sync changes
+window.addEventListener('mongodb-sync-change', function(event) {
+  console.log('📥 Received MongoDB sync change event:', event.detail);
+  
+  const { pulled, pushed } = event.detail || {};
+  
+  if (pulled > 0) {
+    console.log(`🔄 Auto-refreshing UI - ${pulled} records pulled from MongoDB`);
+    
+    // Show notification to user
+    showNotification(`📥 Synced ${pulled} record(s) from MongoDB Atlas`, 'success');
     
     // Refresh patient list if we're on the main page
     if (typeof loadPatientList === 'function') {
