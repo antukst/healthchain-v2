@@ -6,11 +6,50 @@ const db = new PouchDB('healthchain-pro');
 // OPTION 2: Self-hosted CouchDB (uncomment and configure your server URL)
 // OPTION 3: Local CouchDB (for development)
 const COUCHDB_CONFIG = {
-  // For production: Use a secure remote CouchDB server
-  // url: 'https://your-username:your-password@your-couchdb.cloudant.com/healthchain-pro',
+  // IMPORTANT: For Vercel deployment, you MUST use a cloud CouchDB service
+  // Local CouchDB (127.0.0.1) will NOT work on Vercel!
   
-  // For development: Use local CouchDB (install from https://couchdb.apache.org/)
+  // Option A: Use IBM Cloudant (Free tier available)
+  // Sign up: https://www.ibm.com/cloud/cloudant
+  // url: 'https://your-username:your-api-key@your-instance.cloudant.com/healthchain-pro',
+  
+  // Option B: Use Couchbase Cloud (Free tier)
+  // url: 'https://username:password@your-cluster.cloud.couchbase.com/healthchain-pro',
+  
+  // Option C: Use ngrok tunnel for local CouchDB (Development only)
+  // 1. Install ngrok: https://ngrok.com/
+  // 2. Run: ngrok http 5984
+  // 3. Copy the ngrok URL (e.g., https://abc123.ngrok.io)
+  // url: 'https://admin:password@abc123.ngrok.io/healthchain-pro',
+  
+  // Current: Local CouchDB (ONLY works on localhost, NOT on Vercel!)
   url: 'http://admin:password@127.0.0.1:5984/healthchain-pro',
+  
+  // Auto-detect environment
+  get effectiveUrl() {
+    // Check if we're on Vercel/production
+    const isProduction = window.location.hostname !== 'localhost' && 
+                        window.location.hostname !== '127.0.0.1';
+    
+    if (isProduction) {
+      // Try to use environment variable for cloud CouchDB
+      const cloudUrl = localStorage.getItem('healthchain_cloud_couchdb_url');
+      if (cloudUrl) {
+        console.log('🌐 Using cloud CouchDB:', cloudUrl);
+        return cloudUrl;
+      } else {
+        console.warn('⚠️ Cloud CouchDB not configured! Multi-device sync disabled.');
+        console.log('💡 To enable sync on Vercel:');
+        console.log('   1. Sign up for IBM Cloudant: https://www.ibm.com/cloud/cloudant');
+        console.log('   2. Get your database URL');
+        console.log('   3. Run in console: localStorage.setItem("healthchain_cloud_couchdb_url", "YOUR_URL")');
+        return null;
+      }
+    }
+    
+    // Local development
+    return this.url;
+  },
   
   // Sync options
   syncEnabled: true, // Enable CouchDB sync for multi-device support
@@ -33,11 +72,19 @@ function setupCouchDBSync() {
     return null;
   }
 
+  const dbUrl = COUCHDB_CONFIG.effectiveUrl;
+  
+  if (!dbUrl) {
+    console.warn('⚠️ No CouchDB URL available. Sync disabled.');
+    console.log('💡 Running in offline-only mode.');
+    return null;
+  }
+
   try {
     console.log('🔄 Setting up CouchDB sync...');
-    console.log('🌐 Remote URL:', COUCHDB_CONFIG.url);
+    console.log('🌐 Remote URL:', dbUrl.replace(/\/\/.*@/, '//**:**@')); // Hide credentials
     
-    syncHandler = db.sync(COUCHDB_CONFIG.url, {
+    syncHandler = db.sync(dbUrl, {
       ...COUCHDB_CONFIG.syncOptions,
       filter: function(doc) {
         // Only sync patient and medical records
@@ -69,6 +116,7 @@ function setupCouchDBSync() {
     .on('error', function(err) {
       console.error('❌ CouchDB sync error:', err.message);
       console.log('💡 Will retry automatically. Check CouchDB server status.');
+      console.log('💡 If using local CouchDB on Vercel, you need cloud CouchDB instead!');
     })
     .on('complete', function(info) {
       console.log('✅ CouchDB sync complete:', info);
@@ -80,10 +128,9 @@ function setupCouchDBSync() {
   } catch (error) {
     console.warn('⚠️ CouchDB sync failed to initialize:', error.message);
     console.log('💡 To enable sync:');
-    console.log('   1. Install CouchDB from https://couchdb.apache.org/');
-    console.log('   2. Start CouchDB service');
-    console.log('   3. Create database: curl -X PUT http://admin:password@127.0.0.1:5984/healthchain-pro');
-    console.log('   4. Enable CORS in CouchDB config');
+    console.log('   Local: Install CouchDB from https://couchdb.apache.org/');
+    console.log('   Cloud: Sign up for IBM Cloudant: https://www.ibm.com/cloud/cloudant');
+    console.log('   Or use ngrok tunnel: https://ngrok.com/');
     return null;
   }
 }
