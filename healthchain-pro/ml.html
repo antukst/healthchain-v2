@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HealthChain Pro vs. Other Blockchain Healthcare Systems</title>
+  <style>
+    :root{--accent:#6a4ef6;--accent-dark:#4b2fd6;--ok:#6aa84f;--bad:#e06666;--muted:#6b7080}
+    body{font-family:Segoe UI, Roboto, Arial, sans-serif;background:#f7f9fc;color:#16324f;margin:0;padding:24px}
+    .card{max-width:1100px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(11,20,41,0.07);overflow:hidden}
+    .hero{padding:28px 32px;background:linear-gradient(90deg, rgba(106,78,246,0.06), rgba(75,47,214,0.03));display:flex;align-items:center;gap:16px}
+    .hero h1{font-size:20px;margin:0;color:var(--accent-dark)}
+    .hero p{margin:4px 0 0;color:var(--muted);font-size:13px}
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    thead th{background:linear-gradient(90deg,var(--accent),var(--accent-dark));color:#fff;padding:14px 12px;text-align:left;position:sticky;top:0}
+    tbody td{padding:14px 12px;border-bottom:1px solid #eef2f8}
+    tbody tr:nth-child(even){background:#fbfdff}
+    .scheme{width:220px;font-weight:600;color:#0b2a4a}
+    .center{text-align:center}
+    .ok{color:var(--ok);font-weight:700}
+    .bad{color:var(--bad);font-weight:700}
+    .chips{display:flex;flex-wrap:wrap;gap:6px}
+    .chip{background:#f1f5ff;color:var(--accent-dark);padding:6px 8px;border-radius:8px;font-size:12px;border:1px solid rgba(75,47,214,0.06)}
+    .pro-row{background:linear-gradient(90deg, rgba(106,78,246,0.03), rgba(75,47,214,0.02));font-weight:700}
+
+    /* small screens */
+    @media (max-width:720px){
+      .hero{padding:18px}
+      thead th{font-size:12px;padding:10px}
+      tbody td{padding:10px}
+      .scheme{width:160px}
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="hero">
+      <div>
+        <h1>🏆 HealthChain Pro vs. Other Blockchain Healthcare Systems</h1>
+        <p>Comprehensive comparison of security, privacy, and scalability features</p>
+      </div>
+    </div>
+
+    <!-- Architecture Diagram -->
+    <div style="padding:20px 28px 6px">
+      <h2 style="margin:0 0 8px;color:var(--accent-dark);font-size:16px">System Architecture (Offline-first + Blockchain)</h2>
+      <p style="margin:0 0 12px;color:var(--muted);font-size:13px">Visual representation of how the PWA, offline storage, IPFS clusters and Polygon interact.</p>
+    </div>
+
+    <div class="diagram-wrap" style="padding:0 18px 18px">
+      <svg viewBox="0 0 1100 320" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#0b2748" flood-opacity="0.06"/>
+          </filter>
+        </defs>
+
+        <!-- Left column: Frontend / Wallet -->
+        <g>
+          <rect x="18" y="28" rx="8" ry="8" width="160" height="56" fill="#fff" stroke="#f0f4fb" filter="url(#shadow)"/>
+          <text x="98" y="62" text-anchor="middle" font-size="16" fill="#d23b3b" font-weight="700">Angular</text>
+
+          <rect x="18" y="100" rx="8" ry="8" width="160" height="56" fill="#fff" stroke="#f0f4fb" filter="url(#shadow)"/>
+          <text x="98" y="134" text-anchor="middle" font-size="14" fill="#0b2a4a" font-weight="600">PouchDB</text>
+
+          <rect x="18" y="172" rx="8" ry="8" width="160" height="56" fill="#fff" stroke="#f0f4fb" filter="url(#shadow)"/>
+          <text x="98" y="206" text-anchor="middle" font-size="13" fill="#6b6b6b">MetaMask</text>
+        </g>
+
+        <!-- Arrows to center -->
+        <g stroke="#f3b6d6" stroke-width="3" stroke-linecap="round" fill="none">
+          <path d="M178 56 L300 56" />
+          <path d="M178 128 L300 128" />
+          <path d="M178 200 L300 200" />
+          <polygon points="296,52 306,56 296,60" fill="#f3b6d6" />
+          <polygon points="296,124 306,128 296,132" fill="#f3b6d6" />
+          <polygon points="296,196 306,200 296,204" fill="#f3b6d6" />
+        </g>
+
+        <!-- Center: Offline storage / IPFS cluster -->
+        <g>
+          <!-- Monterinic / Node -->
+          <rect x="300" y="12" rx="10" ry="10" width="160" height="72" fill="#fff" stroke="#eaeefe" filter="url(#shadow)"/>
+          <text x="380" y="40" text-anchor="middle" font-size="14" fill="#0b2a4a" font-weight="700">Node / Monterinic</text>
+          <text x="380" y="56" text-anchor="middle" font-size="12" fill="#6b6b6b">(Offline storage)</text>
+          <text x="380" y="72" text-anchor="middle" font-size="11" fill="#6b6b6b">AES-256-GCM (Client-side)</text>
+
+          <!-- IPFS nodes (3 boxes) -->
+          <rect x="300" y="106" rx="12" ry="12" width="140" height="92" fill="#fff" stroke="#f1f5ff" filter="url(#shadow)"/>
+          <text x="370" y="136" text-anchor="middle" font-size="13" fill="#6b2fd6" font-weight="700">Giffline</text>
+          <text x="370" y="152" text-anchor="middle" font-size="12" fill="#6b6b6b">(IPFS pin / gateway)</text>
+
+          <rect x="460" y="106" rx="12" ry="12" width="140" height="92" fill="#fff" stroke="#f1f5ff" filter="url(#shadow)"/>
+          <text x="530" y="140" text-anchor="middle" font-size="13" fill="#6b2fd6" font-weight="700">IPFS</text>
+          <text x="530" y="156" text-anchor="middle" font-size="12" fill="#6b6b6b">(Storage)</text>
+
+          <rect x="620" y="106" rx="12" ry="12" width="140" height="92" fill="#fff" stroke="#f1f5ff" filter="url(#shadow)"/>
+          <text x="690" y="140" text-anchor="middle" font-size="13" fill="#6b2fd6" font-weight="700">IPFS</text>
+          <text x="690" y="156" text-anchor="middle" font-size="12" fill="#6b6b6b">(Backup)</text>
+
+          <!-- arrows between node and giffline/ipfs -->
+          <g stroke="#d9b7f8" stroke-width="3" stroke-linecap="round" fill="none">
+            <path d="M380 84 L380 106" />
+            <polygon points="376,102 384,110 388,100" fill="#d9b7f8" />
+            <path d="M460 98 L460 106" />
+            <path d="M540 98 L540 106" />
+          </g>
+        </g>
+
+        <!-- Right: Blockchain / Polygon / Waltt / CouchDB -->
+        <g>
+          <rect x="820" y="36" rx="10" ry="10" width="180" height="72" fill="#fff" stroke="#eef7ff" filter="url(#shadow)"/>
+          <text x="910" y="64" text-anchor="middle" font-size="14" fill="#6b2fd6" font-weight="800">Polygon</text>
+          <text x="910" y="78" text-anchor="middle" font-size="12" fill="#6b6b6b">(Proofs & Smart Contracts)</text>
+
+          <rect x="820" y="120" rx="10" ry="10" width="180" height="68" fill="#fff" stroke="#eef7ff" filter="url(#shadow)"/>
+          <text x="910" y="152" text-anchor="middle" font-size="13" fill="#16324f" font-weight="700">Waltt</text>
+          <text x="910" y="166" text-anchor="middle" font-size="12" fill="#6b6b6b">(Corregration)</text>
+        </g>
+
+        <!-- CouchDB box (Sync server) -->
+        <g>
+          <rect x="700" y="220" rx="10" ry="10" width="160" height="56" fill="#fff" stroke="#eef7ff" filter="url(#shadow)"/>
+          <text x="780" y="252" text-anchor="middle" font-size="13" fill="#0b2a4a" font-weight="700">CouchDB</text>
+          <text x="780" y="268" text-anchor="middle" font-size="11" fill="#6b6b6b">(Sync Server)</text>
+        </g>
+
+        <!-- Flow arrows from IPFS cluster to Polygon and CouchDB -->
+        <g stroke="#bda7f6" stroke-width="3" stroke-linecap="round" fill="none">
+          <path d="M760 152 L820 152" />
+          <polygon points="816,148 826,152 816,156" fill="#bda7f6" />
+          <path d="M760 132 L820 92" />
+          <!-- IPFS -> CouchDB arrow -->
+          <path d="M700 148 L700 216" />
+          <polygon points="696,212 704,220 708,210" fill="#bda7f6" />
+        </g>
+
+        <!-- PouchDB Sync arrow to CouchDB -->
+        <g stroke="#f7c97d" stroke-width="3" stroke-linecap="round" fill="none">
+          <path d="M178 134 L300 134" />
+          <path d="M440 150 L700 250" />
+          <polygon points="696,246 706,250 696,254" fill="#f7c97d" />
+        </g>
+
+        <!-- MetaMask wallet network label near left -->
+        <text x="110" y="238" font-size="12" fill="#6b6b6b" text-anchor="middle">MetaMask (Wallet network)</text>
+
+        <!-- tech chips summary under diagram -->
+        <g>
+          <rect x="24" y="260" width="1052" height="40" rx="8" fill="#fbfdff" stroke="#eef5ff"/>
+          <text x="70" y="286" font-size="12" fill="#6b2fd6">PouchDB Sync</text>
+          <text x="200" y="286" font-size="12" fill="#6b2fd6">CouchDB</text>
+          <text x="320" y="286" font-size="12" fill="#6b2fd6">AES-256-GCM</text>
+          <text x="460" y="286" font-size="12" fill="#6b2fd6">IPFS (Giffline)</text>
+          <text x="620" y="286" font-size="12" fill="#6b2fd6">Polygon</text>
+          <text x="760" y="286" font-size="12" fill="#6b2fd6">Waltt</text>
+        </g>
+
+        <!-- small labels for data flow -->
+        <text x="520" y="92" font-size="12" fill="#6b6b6b" text-anchor="middle">When Online → Sync IPFS / CouchDB</text>
+        <text x="900" y="20" font-size="12" fill="#6b6b6b" text-anchor="middle">Secure Polygon</text>
+      </svg>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Scheme / Framework</th>
+            <th>Data Integrity</th>
+            <th>Data Privacy</th>
+            <th>Data Security</th>
+            <th>Confidentiality</th>
+            <th>Scalability</th>
+            <th>Technologies Used</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="scheme">MedChain [26]</td>
+            <td class="center ok">✓</td>
+            <td class="center bad">✗</td>
+            <td class="center ok">✓</td>
+            <td class="center ok">✓</td>
+            <td class="center bad">✗</td>
+            <td>Ethereum, Basic Encryption</td>
+          </tr>
+
+          <tr>
+            <td class="scheme">Wang &amp; Song [31]</td>
+            <td class="center ok">✓</td>
+            <td class="center bad">✗</td>
+            <td class="center ok">✓</td>
+            <td class="center ok">✓</td>
+            <td class="center bad">✗</td>
+            <td>Hyperledger Fabric, SHA-256</td>
+          </tr>
+
+          <tr>
+            <td class="scheme">Blochie [32]</td>
+            <td class="center ok">✓</td>
+            <td class="center ok">✓</td>
+            <td class="center bad">✗</td>
+            <td class="center ok">✓</td>
+            <td class="center bad">✗</td>
+            <td>Blockchain, Access Control</td>
+          </tr>
+
+          <tr>
+            <td class="scheme">Blockchain for IoT [36]</td>
+            <td class="center ok">✓</td>
+            <td class="center ok">✓</td>
+            <td class="center ok">✓</td>
+            <td class="center ok">✓</td>
+            <td class="center bad">✗</td>
+            <td>IoT Sensors, Smart Contracts</td>
+          </tr>
+
+          <tr class="pro-row">
+            <td class="scheme">HealthChain Pro (Proposed)</td>
+            <td class="center ok">✓</td>
+            <td class="center ok">✓</td>
+            <td class="center ok">✓</td>
+            <td class="center ok">✓</td>
+            <td class="center ok">✓</td>
+            <td>
+              <div class="chips">
+                <span class="chip">Polygon Blockchain</span>
+                <span class="chip">IPFS Storage</span>
+                <span class="chip">AES-256-GCM</span>
+                <span class="chip">PouchDB Sync</span>
+                <span class="chip">CouchDB</span>
+                <span class="chip">PWA Offline</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="padding:18px 24px;border-top:1px solid #f0f4fb;background:#fff">
+      <p style="margin:0;font-size:13px;color:var(--muted)">Saved as <code>ml.html</code> in project root. Uses only local styles (no external libraries).</p>
+    </div>
+  </div>
+</body>
+</html>

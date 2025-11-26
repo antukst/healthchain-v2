@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthChain Research Proposal - RMU</title>
+    
+    <!-- Reveal.js CSS (neon theme) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/black.min.css" id="theme">
+
+    <style>
+/* -----------------------------
+   3D Page Rotate & Slide (disabled for visibility)
+--------------------------------*/
+.reveal .slides {
+    perspective: none; /* disable 3D */
+}
+.reveal .slides section {
+    backface-visibility: hidden;
+    transition: opacity 0.7s ease; /* only fade */
+}
+.reveal .slides section.future {
+    opacity: 0; /* hide future slides */
+    transform: none;
+    display: none !important;
+}
+.reveal .slides section.past {
+    opacity: 0; /* hide past slides */
+    transform: none;
+    display: none !important;
+}
+.reveal .slides section.present {
+    opacity: 1; /* show current slide */
+    transform: none;
+    display: block !important;
+}
+
+/* -----------------------------
+   ECG BACKGROUND WAVE
+--------------------------------*/
+.ecg-line {
+    position: fixed;
+    top: 55%;
+    left: 0;
+    width: 100%;
+    height: 140px;
+    pointer-events: none;
+    opacity: 0.20;
+    z-index: 1;
+}
+.ecg-line::before {
+    content: "";
+    position: absolute;
+    width: 220%;
+    height: 3px;
+    background: #00ffee;
+    box-shadow: 0 0 18px #00ffee;
+    animation: ecg 2.2s linear infinite;
+    clip-path: polygon(
+        0% 50%, 7% 50%, 9% 20%, 12% 80%, 15% 50%,
+        20% 50%, 22% 10%, 25% 90%, 28% 50%, 
+        100% 50%
+    );
+}
+@keyframes ecg {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* -----------------------------
+   SLIDE GLASS + GLOW
+--------------------------------*/
+.reveal .slides section {
+    background: rgba(0, 35, 50, 0.33);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 20px;
+    padding: 30px; /* reduced from 48px */
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.25);
+    position: relative;
+    z-index: 2;
+}
+
+/* -----------------------------
+   NEON HEADINGS
+--------------------------------*/
+h1, h2 {
+    color: #67faff;
+    text-shadow: 0 0 15px #00c6ff, 0 0 35px #0090aa;
+}
+h3 {
+    color: #afffff;
+}
+
+/* Reduce font sizes for all slides */
+.reveal h1 { font-size: 1.5em !important; }
+.reveal h2 { font-size: 1.1em !important; }
+.reveal h3 { font-size: 1em !important; }
+
+/* -----------------------------
+   TEXT
+--------------------------------*/
+p, li {
+    font-size: 18px;
+    color: #d4ffff;
+}
+ul li::marker { color: #00ffee; }
+
+/* -----------------------------
+   NEON PULSE DIVIDER
+--------------------------------*/
+.divider {
+    height: 3px;
+    margin: 18px 0 25px 0;
+    background: #00ffe7;
+    animation: pulse 1.8s infinite ease-in-out;
+    box-shadow: 0 0 25px #00ffe7;
+}
+@keyframes pulse {
+    0% { opacity: .5; transform: scaleX(1); }
+    50% { opacity: 1; transform: scaleX(1.3); }
+    100% { opacity: .5; transform: scaleX(1); }
+}
+
+/* -----------------------------
+   CLICK RIPPLE EFFECT
+--------------------------------*/
+.ripple {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #00eaff;
+    box-shadow: 0 0 25px #00eaff;
+    transform: scale(0);
+    animation: rippleAnimation 0.6s ease-out forwards;
+    pointer-events: none;
+    z-index: 99999;
+}
+@keyframes rippleAnimation {
+    from { transform: scale(0); opacity: 1; }
+    to { transform: scale(18); opacity: 0; }
+}
+
+/* -----------------------------
+   ULTRA PREMIUM CIRCULAR NEXT/PREV BUTTONS
+--------------------------------*/
+.nav-circle {
+    position: fixed;
+    bottom: 40px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(0,255,255,0.05);
+    backdrop-filter: blur(12px);
+    border: 3px solid rgba(0,255,255,0.5);
+    color: #00ffff;
+    font-size: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 0 20px #00ffff, 0 0 50px #00ffff inset, 0 0 70px rgba(0,255,255,0.3);
+    transition: 0.3s all ease-in-out;
+    animation: floatPulse 2.5s ease-in-out infinite, haloGlow 3s infinite alternate;
+    font-family: 'Arial', sans-serif;
+    z-index: 9999;
+}
+.nav-circle:hover { transform: scale(1.15); box-shadow: 0 0 60px #00ffff, 0 0 100px #00ffff inset, 0 0 120px rgba(0,255,255,0.5); }
+.nav-circle:active { transform: scale(0.95); box-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff inset; }
+.nav-circle span { font-size: 16px; color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 25px #00ffff; margin-top: 4px; }
+.nav-prev { left: 20px; }
+.nav-next { right: 20px; }
+@keyframes floatPulse { 0% { transform: translateY(0); } 25% { transform: translateY(-3px); } 50% { transform: translateY(0); } 75% { transform: translateY(3px); } 100% { transform: translateY(0); } }
+@keyframes haloGlow { 0% { box-shadow: 0 0 20px #00ffff, 0 0 50px rgba(0,255,255,0.2) inset; } 50% { box-shadow: 0 0 40px #00ffff, 0 0 70px rgba(0,255,255,0.4) inset; } 100% { box-shadow: 0 0 20px #00ffff, 0 0 50px rgba(0,255,255,0.2) inset; } }
+
+/* -----------------------------
+   NEON PROGRESS BAR
+--------------------------------*/
+.reveal .progress { height: 6px !important; background: rgba(0,255,255,0.1); }
+.reveal .progress span { background: linear-gradient(90deg, #00ffff, #00ff99, #00ffff); box-shadow: 0 0 15px #00ffff, 0 0 30px #00ff99; }
+
+/* keep the slide enter/exit animations previously added */
+.slide-enter { animation: slideIn 700ms cubic-bezier(0.22, 0.9, 0.32, 1) both; will-change: transform, opacity, filter; }
+.slide-exit { animation: slideOut 600ms cubic-bezier(0.22, 0.9, 0.32, 1) both; will-change: transform, opacity, filter; }
+@keyframes slideIn { 0% { opacity: 0; transform: translateY(20px) scale(0.995); filter: blur(2px); } 60% { opacity: 1; transform: translateY(6px) scale(0.998); filter: blur(0.6px); } 100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+@keyframes slideOut { 0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } 100% { opacity: 0; transform: translateY(-18px) scale(0.995); filter: blur(2px); } }
+
+/* Responsive tweaks (smaller screens) */
+@media (max-width: 768px) {
+    .reveal .slides section { padding: 28px; }
+    .nav-circle { width: 64px; height: 64px; font-size: 28px; }
+    p, li { font-size: 18px; }
+}
+
+/* Page counter styling */
+#page-counter {
+    position: fixed;
+    bottom: 46px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,255,255,0.06);
+    color: #00ffff;
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(0,255,255,0.2);
+    box-shadow: 0 0 12px rgba(0,255,255,0.08);
+    font-weight: 600;
+    z-index: 9999;
+    font-size: 16px;
+}
+
+/* Tech stack slide smaller */
+.tech-stack {
+    padding: 15px !important; /* even smaller */
+}
+.tech-stack .highlight-box {
+    padding: 8px !important;
+    margin: 8px 0 !important;
+}
+
+/* Fallback & utility styles to ensure content is visible */
+body {
+    background: linear-gradient(180deg, #00141a 0%, #001a22 100%);
+}
+.reveal {
+    min-height: 100vh;
+}
+.reveal .slides section {
+    color: #d4ffff !important;
+    overflow: visible !important;
+    display: block !important; /* ensure sections are displayed */
+}
+
+/* Basic styles for previously-removed utility classes so content shows */
+.highlight-box {
+    background: rgba(0,255,255,0.03);
+    border-left: 4px solid #00ffee;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 12px;
+    color: #d4ffff !important;
+}
+.feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.feature-card { background: rgba(255,255,255,0.03); padding: 18px; border-radius: 12px; color: #d4ffff !important; }
+.stats-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.stat-box { background: rgba(0,255,255,0.04); padding: 18px; border-radius: 12px; color: #d4ffff !important; }
+
+/* Ensure headings inside sections are visible */
+.reveal section h1, .reveal section h2, .reveal section h3 { color: #67faff !important; }
+
+/* Force all text to be visible */
+.reveal section p, .reveal section li, .reveal section span { color: #d4ffff !important; }
+
+/* Logo size */
+.logo-container img {
+    width: 50px;
+    height: auto;
+}
+.logo-container {
+    margin-bottom: 0;
+}
+
+/* Animated icons */
+.icon {
+    animation: bounce 2s ease-in-out infinite;
+}
+
+
+</style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            
+            <!-- Slide 1: Cover Page -->
+            <section class="cover-page">
+                <div class="logo-container">
+                    <img src="rmu-logo.png" alt="RMU Logo">
+                </div>
+                <div style="margin-top: 0px; margin-bottom: 5px;">
+                    <p style="font-size: 40px; font-weight: 600; margin: 0px 0;">Rabindra Maitree University (RMU)</p>
+                </div>
+                <p style="font-size: 21px; font-weight: 600; margin: 10px 0; color: white;">Research Proposal</p>
+                <p class="subtitle">A Hybrid, Offline-First, Low-Cost Blockchain-Based Framework Using PouchDB+CouchDB and IPFS/Pinata Cloud+Polygon for Privacy-Preserving Electronic Health Records (EHR) in Rural Healthcare of Bangladesh</p>
+                
+                <div class="author-info">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 1000px; margin: 0 auto;">
+                        <div style="background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%); padding: 12px; border-radius: 15px; border: 2px solid rgba(255,255,255,0.4); backdrop-filter: blur(10px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+                            <div style="text-align: center; margin-bottom: 8px;">
+                                <!-- Inline graduation cap SVG -->
+                                <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="color:#FDB515; animation: bounce 2s ease-in-out infinite;">
+                                    <path d="M32 12L4 24l28 12 28-12L32 12z" fill="#FDB515"/>
+                                    <path d="M10 28v8c0 6 10 12 22 12s22-6 22-12v-8" fill="#004B87"/>
+                                    <path d="M32 54c-6 0-10-3-10-6h20c0 3-4 6-10 6z" fill="#004B87"/>
+                                </svg>
+                            </div>
+                            <p style="font-size: 17px; font-weight: 700; margin-bottom: 8px; color: #FDB515; text-align: center; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 5px;">Principal Investigator</p>
+                            <p style="font-size: 15px; font-weight: 600; margin: 3px 0; text-align: center;">Md Antu Islam</p>
+                            <p style="font-size: 13px; margin: 3px 0; text-align: center;">ID: 087-22-1-05101-002(CT)</p>
+                            <p style="font-size: 13px; margin: 3px 0; text-align: center;">Department of Computer Science and Engineering (CSE)</p>
+                            <p style="font-size: 13px; margin: 3px 0; text-align: center;">Rabindra Maitree University (RMU), Kushtia</p>
+                        </div>
+                        <div style="background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%); padding: 12px; border-radius: 15px; border: 2px solid rgba(255,255,255,0.4); backdrop-filter: blur(10px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+                            <div style="text-align: center; margin-bottom: 8px;">
+                                <!-- Inline teacher SVG -->
+                                <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="color:#FDB515; animation: bounce 2s ease-in-out infinite 0.5s;">
+                                    <circle cx="32" cy="18" r="8" fill="#FDB515" />
+                                    <path d="M10 44c0-11 10-20 22-20s22 9 22 20v6H10v-6z" fill="#004B87" />
+                                    <path d="M6 52h52v6H6z" fill="#004B87" />
+                                </svg>
+                            </div>
+                            <p style="font-size: 17px; font-weight: 700; margin-bottom: 8px; color: #FDB515; text-align: center; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 5px;">Supervisor</p>
+                            <p style="font-size: 15px; font-weight: 600; margin: 3px 0; text-align: center;">Mahdi Nabi Mumu</p>
+                            <p style="font-size: 13px; margin: 3px 0; text-align: center;">Lecturer</p>
+                            <p style="font-size: 13px; margin: 3px 0; text-align: center;">Department of Computer Science and Engineering (CSE)</p>
+                            <p style="font-size: 13px; margin: 3px 0; text-align: center;">Rabindra Maitree University (RMU), Kushtia</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 2: Introduction -->
+            <section>
+                <h2><i class="fas fa-hospital icon"></i>Introduction</h2>
+                <div class="highlight-box">
+                    <p><strong>Healthcare challenges in rural Bangladesh:</strong></p>
+                    <ul>
+                        <li>Limited internet connectivity and infrastructure</li>
+                        <li>Fragmented patient data across facilities</li>
+                        <li>Privacy and security concerns with health records</li>
+                        <li>High costs of traditional systems</li>
+                    </ul>
+                </div>
+                <p><strong>HealthChain</strong> provides an innovative solution combining blockchain technology with offline-first architecture to revolutionize rural healthcare data management.</p>
+            </section>
+
+            <!-- Slide 3: Problem Statement -->
+            <section>
+                <h2><i class="fas fa-exclamation-triangle icon"></i>Problem Statement</h2>
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <span class="number">65%</span>
+                        <span class="label">Rural Population</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="number">30%</span>
+                        <span class="label">Internet Access</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="number">80%</span>
+                        <span class="label">Paper Records</span>
+                    </div>
+                </div>
+                <ul>
+                    <li><i class="fas fa-wifi icon"></i>Unreliable internet connectivity in rural areas</li>
+                    <li><i class="fas fa-lock icon"></i>Data privacy and security vulnerabilities</li>
+                    <li><i class="fas fa-database icon"></i>Lack of interoperability between systems</li>
+                    <li><i class="fas fa-dollar-sign icon"></i>High implementation costs</li>
+                </ul>
+            </section>
+
+            <!-- Slide 4: Research Objectives -->
+            <section>
+                <h2><i class="fas fa-bullseye icon"></i>Research Objectives</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h3><i class="fas fa-bullseye" style="margin-right: 10px;"></i>Primary Objective</h3>
+                        <p>Develop a low-cost, offline-first blockchain framework for secure EHR management in resource-constrained rural healthcare settings</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h3><i class="fas fa-list-check" style="margin-right: 10px;"></i>Secondary Objectives</h3>
+                        <ul>
+                            <li>Ensure data privacy using encryption and blockchain</li>
+                            <li>Enable offline data synchronization</li>
+                            <li>Reduce infrastructure costs significantly</li>
+                            <li>Improve patient data accessibility and continuity of care</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 5: System Architecture -->
+            <section>
+                <h2><i class="fas fa-sitemap icon"></i>System Architecture</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-database"></i>
+                        <h3>PouchDB + CouchDB</h3>
+                        <p>Offline-first database with seamless synchronization</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-cloud"></i>
+                        <h3>IPFS + Pinata</h3>
+                        <p>Decentralized storage for medical documents</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-link"></i>
+                        <h3>Polygon Blockchain</h3>
+                        <p>Low-cost, scalable blockchain for immutable records</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>AES Encryption</h3>
+                        <p>End-to-end data encryption for privacy</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 6: Key Features -->
+            <section>
+                <h2><i class="fas fa-star icon"></i>Key Features</h2>
+                <ul>
+                    <li><i class="fas fa-plug-circle-xmark icon"></i><strong>Offline-First Architecture:</strong> Works seamlessly without internet, syncs when available</li>
+                    <li><i class="fas fa-lock icon"></i><strong>Privacy-Preserving:</strong> AES-256 encryption and blockchain immutability</li>
+                    <li><i class="fas fa-coins icon"></i><strong>Low-Cost Solution:</strong> Uses free-tier services and minimal infrastructure</li>
+                    <li><i class="fas fa-mobile-alt icon"></i><strong>Progressive Web App:</strong> Works on any device, no app store required</li>
+                    <li><i class="fas fa-sync icon"></i><strong>Automatic Sync:</strong> Background synchronization when connectivity restored</li>
+                    <li><i class="fas fa-chart-line icon"></i><strong>Analytics Dashboard:</strong> Real-time insights into health data trends</li>
+                </ul>
+            </section>
+
+            <!-- Slide 7: Technology Stack -->
+            <section class="tech-stack">
+                <h2><i class="fas fa-layer-group icon"></i>Technology Stack</h2>
+                <div class="highlight-box">
+                    <h3><i class="fas fa-code" style="margin-right: 10px; color: var(--secondary-color);"></i>Frontend</h3>
+                    <p>HTML5, CSS3, JavaScript (Vanilla), Chart.js, Progressive Web App APIs</p>
+                </div>
+                <div class="highlight-box">
+                    <h3><i class="fas fa-server" style="margin-right: 10px; color: var(--secondary-color);"></i>Backend & Storage</h3>
+                    <p>PouchDB (Client-side), CouchDB (Server-side), IPFS/Pinata Cloud, Polygon Blockchain (Amoy Testnet)</p>
+                </div>
+                <div class="highlight-box">
+                    <h3><i class="fas fa-shield-alt" style="margin-right: 10px; color: var(--secondary-color);"></i>Security</h3>
+                    <p>AES-256 Encryption, Web3.js, MetaMask Integration, SHA-256 Hashing</p>
+                </div>
+            </section>
+
+            <!-- Slide 8: Methodology -->
+            <section>
+                <h2><i class="fas fa-flask icon"></i>Methodology</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h3><i class="fas fa-pencil-ruler" style="margin-right: 10px;"></i>Phase 1: System Design (Weeks 1-3)</h3>
+                        <p>Architecture planning, database schema design, UI/UX prototyping</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h3><i class="fas fa-code-branch" style="margin-right: 10px;"></i>Phase 2: Development (Weeks 4-10)</h3>
+                        <p>Core features implementation, blockchain integration, security modules</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h3><i class="fas fa-vial" style="margin-right: 10px;"></i>Phase 3: Testing (Weeks 11-13)</h3>
+                        <p>Unit testing, integration testing, security audits, offline functionality tests</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h3><i class="fas fa-rocket" style="margin-right: 10px;"></i>Phase 4: Pilot Deployment (Weeks 14-16)</h3>
+                        <p>Deployment in 2-3 rural health centers, user training, feedback collection</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 9: Expected Outcomes -->
+            <section>
+                <h2><i class="fas fa-trophy icon"></i>Expected Outcomes</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>Improved Access</h3>
+                        <p>100% uptime even without internet connectivity</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-user-shield"></i>
+                        <h3>Enhanced Privacy</h3>
+                        <p>Encrypted, blockchain-secured patient data</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <h3>Cost Reduction</h3>
+                        <p>70-80% lower than traditional EHR systems</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-hospital-user"></i>
+                        <h3>Better Care</h3>
+                        <p>Improved continuity and quality of patient care</p>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <p><i class="fas fa-lightbulb icon"></i><strong>Impact:</strong> Scalable solution applicable to 20,000+ rural healthcare facilities across Bangladesh</p>
+                </div>
+            </section>
+
+            <!-- Slide 10: Budget & Resources -->
+            <section>
+                <h2><i class="fas fa-calculator icon"></i>Budget & Resources</h2>
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <span class="number">৳15K</span>
+                        <span class="label">Development</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="number">৳8K</span>
+                        <span class="label">Testing</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="number">৳7K</span>
+                        <span class="label">Deployment</span>
+                    </div>
+                </div>
+                <ul>
+                    <li><i class="fas fa-laptop-code icon"></i>Development Tools: Free/Open-source (VS Code, Git, Node.js)</li>
+                    <li><i class="fas fa-cloud icon"></i>Cloud Services: Free tiers (Pinata, Polygon Amoy)</li>
+                    <li><i class="fas fa-users icon"></i>Human Resources: Student developer + faculty supervisor</li>
+                    <li><i class="fas fa-vial icon"></i>Testing: 2-3 partner rural health facilities</li>
+                </ul>
+                <p><strong>Total Estimated Budget: ৳30,000 - ৳40,000</strong></p>
+            </section>
+
+            <!-- Slide 11: Challenges & Solutions -->
+            <section>
+                <h2><i class="fas fa-wrench icon"></i>Challenges & Solutions</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h3><i class="fas fa-user-graduate" style="margin-right: 10px;"></i>Challenge: Limited Technical Literacy</h3>
+                        <p><strong>Solution:</strong> Intuitive UI design, comprehensive training programs, local language support</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h3><i class="fas fa-bolt" style="margin-right: 10px;"></i>Challenge: Power Outages</h3>
+                        <p><strong>Solution:</strong> Offline-first architecture, mobile device compatibility, low battery consumption</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h3><i class="fas fa-database" style="margin-right: 10px;"></i>Challenge: Data Migration</h3>
+                        <p><strong>Solution:</strong> Flexible import tools, gradual transition support, legacy system compatibility</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h3><i class="fas fa-gavel" style="margin-right: 10px;"></i>Challenge: Regulatory Compliance</h3>
+                        <p><strong>Solution:</strong> Adherence to Bangladesh health data policies, consultation with authorities</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 12: Future Scope -->
+            <section>
+                <h2><i class="fas fa-rocket icon"></i>Future Scope</h2>
+                <i class="fas fa-globe-asia icon-large"></i>
+                <ul>
+                    <li><i class="fas fa-brain icon"></i><strong>AI Integration:</strong> Predictive analytics for disease outbreaks and patient risk assessment</li>
+                    <li><i class="fas fa-mobile-alt icon"></i><strong>Mobile App:</strong> Native Android/iOS applications for enhanced performance</li>
+                    <li><i class="fas fa-language icon"></i><strong>Multi-language Support:</strong> Bangla, English, and regional languages</li>
+                    <li><i class="fas fa-network-wired icon"></i><strong>Telemedicine Integration:</strong> Video consultations and remote diagnostics</li>
+                    <li><i class="fas fa-tablets icon"></i><strong>IoT Integration:</strong> Wearable devices and health monitoring sensors</li>
+                    <li><i class="fas fa-globe icon"></i><strong>Regional Expansion:</strong> Deployment across South Asian countries</li>
+                </ul>
+            </section>
+
+            <!-- Slide 13: Thank You -->
+            <section class="thank-you-page">
+                <h1>Thank You!</h1>
+                <i class="fas fa-heart"></i>
+                <h2>Questions & Discussion</h2>
+                <div class="author-info">
+                    <p><strong>Md Antu Islam</strong></p>
+                    <p>ID: 087-22-1-05101-002(CT)</p>
+                    <p>Department of Computer Science and Engineering</p>
+                    <p>Rabindra Maitree University (RMU), Kushtia</p>
+                    <p style="margin-top: 30px;"><i class="fas fa-envelope icon"></i> Contact: antu.cse@rmu.ac.bd</p>
+                    <p><i class="fas fa-phone icon"></i> Phone: +880 XXX-XXXXXXX</p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+        <!-- Neon ECG Animation -->
+        <div class="ecg-line"></div>
+
+        <!-- PREMIUM CIRCULAR NAV BUTTONS -->
+        <div class="nav-circle nav-prev">← <span>Prev</span></div>
+        <div class="nav-circle nav-next">→ <span>Next</span></div>
+
+        <!-- Page counter -->
+        <div id="page-counter" class="page-counter">1 / 13</div>
+
+    <!-- Reveal.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>    <script>
+        console.log('Reveal.js script loaded');
+        // Initialize Reveal.js with neon-friendly settings
+        Reveal.initialize({
+            transition: "slide",
+            backgroundTransition: "zoom",
+            slideNumber: false,
+            controls: false, // using custom nav circles
+            hash: true,
+            center: true,
+            progress: true
+        });
+        console.log('Reveal initialized');            // Circular buttons actions
+            const nextBtn = document.querySelector(".nav-next");
+            const prevBtn = document.querySelector(".nav-prev");
+            if (nextBtn) nextBtn.onclick = () => Reveal.right();
+            if (prevBtn) prevBtn.onclick = () => Reveal.left();
+
+            // Page counter setup
+            const pageCounter = document.getElementById('page-counter');
+            function updatePageCounter() {
+                if (!pageCounter) return;
+                const total = Reveal.getTotalSlides();
+                const indices = Reveal.getIndices();
+                // horizontal index is indices.h (0-based) for top-level slides
+                const current = (typeof indices.h === 'number') ? (indices.h + 1) : 1;
+                pageCounter.textContent = `${current} / ${total}`;
+            }
+
+            // Update on ready and on slide change
+            Reveal.on('ready', () => updatePageCounter());
+            Reveal.on('slidechanged', () => updatePageCounter());
+
+            // Click ripple effect
+            document.addEventListener("click", function(e) {
+                let ripple = document.createElement("div");
+                ripple.className = "ripple";
+                ripple.style.left = `${e.clientX - 6}px`;
+                ripple.style.top = `${e.clientY - 6}px`;
+                document.body.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+
+            // Add custom animations on slide change (incoming + outgoing)
+            Reveal.on('slidechanged', event => {
+                const incoming = event.currentSlide;
+                const outgoing = event.previousSlide;
+
+                // Animate outgoing slide away (if any)
+                if (outgoing) {
+                    outgoing.classList.remove('slide-exit');
+                    void outgoing.offsetWidth;
+                    outgoing.classList.add('slide-exit');
+                    outgoing.addEventListener('animationend', function _onOut() {
+                        outgoing.classList.remove('slide-exit');
+                        outgoing.removeEventListener('animationend', _onOut);
+                    });
+                }
+
+                // Animate incoming slide in
+                if (incoming) {
+                    incoming.classList.remove('slide-enter');
+                    void incoming.offsetWidth;
+                    incoming.classList.add('slide-enter');
+                    incoming.addEventListener('animationend', function _onIn() {
+                        incoming.classList.remove('slide-enter');
+                        incoming.removeEventListener('animationend', _onIn);
+                    });
+                }
+            });
+        </script>
+</body>
+</html>

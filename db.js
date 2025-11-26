@@ -13,12 +13,14 @@ const COUCHDB_CONFIG = {
   url: 'http://admin:password@127.0.0.1:5984/healthchain-pro',
   
   // Sync options
-  syncEnabled: false, // Set to true when CouchDB is configured
+  syncEnabled: true, // Enable CouchDB sync for multi-device support
   syncOptions: {
     live: true,  // Continuous sync
     retry: true, // Retry on failure
     heartbeat: 10000, // Keep connection alive
-    timeout: 30000
+    timeout: 30000,
+    batch_size: 100,
+    batches_limit: 10
   }
 };
 
@@ -33,6 +35,7 @@ function setupCouchDBSync() {
 
   try {
     console.log('🔄 Setting up CouchDB sync...');
+    console.log('🌐 Remote URL:', COUCHDB_CONFIG.url);
     
     syncHandler = db.sync(COUCHDB_CONFIG.url, {
       ...COUCHDB_CONFIG.syncOptions,
@@ -42,29 +45,45 @@ function setupCouchDBSync() {
       }
     })
     .on('change', function(info) {
-      console.log('✅ CouchDB sync change:', info);
+      console.log('✅ CouchDB sync change:', info.direction, 'docs:', info.change.docs.length);
+      
+      // Trigger UI refresh when data syncs from remote
+      if (info.direction === 'pull' && info.change && info.change.docs.length > 0) {
+        console.log('📥 New data synced from remote device!');
+        // Emit custom event for UI to refresh
+        window.dispatchEvent(new CustomEvent('couchdb-sync-change', {
+          detail: { docs: info.change.docs }
+        }));
+      }
     })
     .on('paused', function(err) {
-      console.log('⏸️ CouchDB sync paused');
+      console.log('⏸️ CouchDB sync paused - waiting for changes');
     })
     .on('active', function() {
-      console.log('▶️ CouchDB sync active');
+      console.log('▶️ CouchDB sync active - syncing data');
     })
     .on('denied', function(err) {
       console.error('❌ CouchDB sync denied:', err);
+      console.log('💡 Check CouchDB credentials and permissions');
     })
     .on('error', function(err) {
-      console.error('❌ CouchDB sync error:', err);
+      console.error('❌ CouchDB sync error:', err.message);
+      console.log('💡 Will retry automatically. Check CouchDB server status.');
     })
     .on('complete', function(info) {
       console.log('✅ CouchDB sync complete:', info);
     });
 
-    console.log('✅ CouchDB sync enabled - Data will sync when online');
+    console.log('✅ CouchDB sync enabled - Multi-device sync active');
+    console.log('📱 Data will sync automatically between devices');
     return syncHandler;
   } catch (error) {
     console.warn('⚠️ CouchDB sync failed to initialize:', error.message);
-    console.log('💡 To enable sync: Install CouchDB and update COUCHDB_CONFIG in db.js');
+    console.log('💡 To enable sync:');
+    console.log('   1. Install CouchDB from https://couchdb.apache.org/');
+    console.log('   2. Start CouchDB service');
+    console.log('   3. Create database: curl -X PUT http://admin:password@127.0.0.1:5984/healthchain-pro');
+    console.log('   4. Enable CORS in CouchDB config');
     return null;
   }
 }

@@ -439,14 +439,11 @@
 
           <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border-2 border-purple-200 dark:border-purple-800">
             <div class="flex items-center justify-between mb-2">
-              <h3 class="font-semibold text-purple-900 dark:text-purple-100">Device ID</h3>
-              <button id="copyDeviceId" class="text-purple-600 hover:text-purple-800 dark:text-purple-400" title="Copy">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                </svg>
-              </button>
+              <h3 class="font-semibold text-purple-900 dark:text-purple-100">Bluetooth</h3>
+              <span id="bluetoothSyncStatus" class="px-2 py-1 rounded-full bg-gray-300 dark:bg-gray-600 text-xs">⏸️ Off</span>
             </div>
-            <p id="deviceIdDisplay" class="text-xs text-purple-700 dark:text-purple-300 font-mono truncate">Loading...</p>
+            <p class="text-xs text-purple-700 dark:text-purple-300">Direct device sync</p>
+            <p id="bluetoothLastSync" class="text-xs text-gray-600 dark:text-gray-400 mt-2">Last: Never</p>
           </div>
         </div>
 
@@ -505,20 +502,28 @@
           <p class="text-sm">Generate QR code for any patient in the patient list. Scan on mobile to import instantly.</p>
         </div>
 
-        <!-- Export/Import -->
+        <!-- Bluetooth Sync -->
         <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-xl">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white text-xl">📦</div>
-            <div>
-              <h3 class="text-lg font-bold">Manual Backup</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Export/Import JSON files</p>
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white text-xl">�</div>
+              <div>
+                <h3 class="text-lg font-bold">Bluetooth Device Sync</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Direct transfer without internet</p>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button id="sendBluetoothBtn" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm">Send</button>
+              <button id="receiveBluetoothBtn" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm">Receive</button>
             </div>
           </div>
-          <div class="flex gap-3">
-            <button id="exportAllJSON" class="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold">📥 Export All</button>
-            <button id="importJSONBtn" class="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold">📤 Import JSON</button>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg text-sm space-y-2">
+            <p class="font-semibold">📱 Direct Device-to-Device Transfer</p>
+            <p>• No internet required - works offline</p>
+            <p>• Secure encrypted transfer between devices</p>
+            <p>• Perfect for hospitals without WiFi</p>
+            <p>• Select patient → Send → Other device → Receive</p>
           </div>
-          <input type="file" id="importJSONInput" accept=".json" class="hidden">
         </div>
       </div>
     </div>
